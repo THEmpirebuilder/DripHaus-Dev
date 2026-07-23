@@ -115,9 +115,18 @@ export default async function ArticlePage({ params }: Props) {
                 </form>
               </>
             ) : (
-              article.status === "active" && (
-                <p className="text-sm text-muted">Le paiement sécurisé arrive bientôt.</p>
-              )
+              article.status === "active" &&
+              (article.is_auction ? (
+                <p className="text-sm text-muted">Cet article est aux enchères.</p>
+              ) : viewer ? (
+                <Link href={`/checkout/${article.id}`}>
+                  <Button>Acheter — {article.price} {article.currency}</Button>
+                </Link>
+              ) : (
+                <Link href="/login">
+                  <Button variant="outline">Connecte-toi pour acheter</Button>
+                </Link>
+              ))
             )}
           </div>
         </div>

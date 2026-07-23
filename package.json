@@ -11,6 +11,8 @@
     "types:gen": "supabase gen types typescript --project-id dhinegywctxmhepgempp > types/database.ts"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^6.8.0",
+    "@stripe/stripe-js": "^9.12.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.47.10",
     "next": "^15.1.12",

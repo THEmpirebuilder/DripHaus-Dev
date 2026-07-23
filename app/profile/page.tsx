@@ -38,7 +38,12 @@ export default async function ProfilePage() {
             </p>
           </div>
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-3">
+          <Link href="/orders" className="text-sm underline underline-offset-4">
+            Mes commandes
+          </Link>
+          <LogoutButton />
+        </div>
       </div>
 
       <Card className="mt-8">
