@@ -2,6 +2,57 @@ import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Enums } from "@/types/database";
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+/**
+ * Notifie le vendeur d'une transaction (user OU membres de la boutique).
+ * Exécuté en service_role (RLS contournée) : c'est le point autorisé à
+ * insérer des notifications côté serveur.
+ */
+async function notifyTransactionSeller(
+  supabase: AdminClient,
+  transactionId: string,
+  type: Enums<"notification_type">,
+  title: string,
+  body: string
+) {
+  const { data: tx } = await supabase
+    .from("transactions")
+    .select("seller_user_id, seller_boutique_id")
+    .eq("id", transactionId)
+    .maybeSingle();
+  if (!tx) return;
+
+  if (tx.seller_user_id) {
+    await supabase.from("notifications").insert({
+      user_id: tx.seller_user_id,
+      type,
+      title,
+      body,
+      reference_type: "transaction",
+      reference_id: transactionId,
+    });
+  } else if (tx.seller_boutique_id) {
+    const { data: members } = await supabase
+      .from("boutique_members")
+      .select("user_id")
+      .eq("boutique_id", tx.seller_boutique_id);
+    if (members && members.length > 0) {
+      await supabase.from("notifications").insert(
+        members.map((m) => ({
+          user_id: m.user_id,
+          type,
+          title,
+          body,
+          reference_type: "transaction" as const,
+          reference_id: transactionId,
+        }))
+      );
+    }
+  }
+}
 
 // Le webhook a besoin du corps brut pour vérifier la signature Stripe.
 export const runtime = "nodejs";
@@ -46,13 +97,29 @@ export async function POST(req: NextRequest) {
         const pi = event.data.object as Stripe.PaymentIntent;
         const transactionId = pi.metadata?.transaction_id;
         if (transactionId) {
-          await supabase
+          const { data: tx } = await supabase
             .from("transactions")
             .update({
               payment_status: "held",
               stripe_payment_id: pi.id,
             })
-            .eq("id", transactionId);
+            .eq("id", transactionId)
+            .select("article_id")
+            .maybeSingle();
+
+          // L'article payé sort du marché.
+          if (tx?.article_id) {
+            await supabase.from("articles").update({ status: "sold" }).eq("id", tx.article_id);
+          }
+
+          // Notifie le vendeur de la vente encaissée.
+          await notifyTransactionSeller(
+            supabase,
+            transactionId,
+            "sale",
+            "Vente confirmée",
+            "Ton article a été vendu et le paiement est sécurisé."
+          );
         }
         break;
       }
@@ -83,6 +150,14 @@ export async function POST(req: NextRequest) {
               payout_released_at: new Date().toISOString(),
             })
             .eq("id", transactionId);
+
+          await notifyTransactionSeller(
+            supabase,
+            transactionId,
+            "payout",
+            "Versement effectué",
+            "Le montant de ta vente vient de t'être versé."
+          );
         }
         break;
       }

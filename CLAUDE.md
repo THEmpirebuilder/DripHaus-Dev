@@ -38,11 +38,16 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | **Couche 8 — Vues marketplace & feed** | ✅ filtres, tri, pagination |
 | **Couche 9 — Studio IA** | ✅ caption / SEO / description via AI Gateway (`ai`) |
 
-### Suivis backend à câbler (hors périmètre code client, RLS oblige)
-- **Migration `005_storage_media.sql`** : à appliquer sur Supabase (bucket + policies Storage).
-- **Notifications** : génération (sale, new_bid, new_follower…) via triggers DB ou webhook (service_role) — l'insert client est interdit par la RLS.
-- **Enchères** : clôture à l'échéance + attribution `winner_user_id` via tâche planifiée (aucun trigger, update réservé au vendeur).
-- **Paiements** : le webhook Stripe fait évoluer `payment_status`/`payout_status` et résout le compte vendeur pour le payout.
+### Migrations à appliquer sur Supabase (écrites, non jouées)
+- **`005_storage_media.sql`** : bucket `media` + policies Storage (sinon l'upload d'images échoue).
+- **`006_notifications_triggers.sql`** : triggers `new_follower`/`new_like`/`new_comment`/`new_bid` (l'insert client sur `notifications` est interdit par la RLS).
+- **`007_close_auctions_cron.sql`** : clôture des enchères échues + `winner_user_id` + notifs `auction_won`/`sale`, via `pg_cron` (activer l'extension). Marque l'article `reserved`.
+
+### Câblé côté serveur
+- **Webhook Stripe** (`app/api/webhooks/stripe/route.ts`) : `held`/`payout` + marque l'article `sold` à l'encaissement, et émet les notifs `sale`/`payout` (service_role). Reste à déclencher `releaseSellerPayout` après confirmation de livraison (résout alors le compte vendeur).
+
+### Variables d'environnement
+- `NEXT_PUBLIC_SITE_URL` (liens de confirmation e-mail), `AI_GATEWAY_API_KEY` (Studio IA), en plus des clés Stripe/Supabase déjà attendues.
 
 Projet Supabase : `dhinegywctxmhepgempp` (région eu-central-2).
 Projet Vercel : `drip-haus-dev`, équipe `Yann's projects`.
