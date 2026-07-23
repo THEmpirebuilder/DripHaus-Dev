@@ -29,6 +29,9 @@ export async function SiteHeader() {
         <nav className="flex items-center gap-3">
           {user ? (
             <>
+              <Link href="/studio" className="hidden text-sm font-medium sm:inline">
+                Studio
+              </Link>
               <Link href="/articles/new" className="text-sm font-medium">
                 Vendre
               </Link>

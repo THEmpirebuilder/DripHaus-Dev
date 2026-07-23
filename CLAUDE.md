@@ -27,9 +27,22 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | Fonctions Stripe Connect | ✅ `lib/stripe/connect.ts` |
 | Webhook Stripe | ✅ `app/api/webhooks/stripe/route.ts` déployé |
 | Déploiement Vercel | ✅ production sur `drip-haus-dev.vercel.app` |
-| Design tokens + primitives UI (`components/ui/`) | ✅ Button, Input, Textarea, Select, Label, Alert, Card, Avatar, SubmitButton |
+| Design tokens + primitives UI (`components/ui/`) | ✅ Button, Input, Textarea, Select, Label, Alert, Card, Avatar, Badge, Price, Rating, EmptyState, SubmitButton |
 | **Couche 1 — Auth & utilisateurs** | ✅ signup (rôle), login, logout, session, profil (édition + public `/u/[username]`) |
-| **Couches 2 → 9 (boutiques, articles, social, enchères, paiements…)** | ⏳ **à construire** |
+| **Couche 2 — Boutiques & membres** | ✅ création, page publique, gestion membres |
+| **Couche 3 — Catégories & articles** | ✅ CRUD, upload images (bucket `media`), fiche article |
+| **Couche 4 — Social** | ✅ posts, feed, follows, likes, commentaires |
+| **Couche 5 — Enchères** | ✅ création, offres, post auto au feed |
+| **Couche 6 — Transactions & paiements** | ✅ checkout escrow (Stripe Elements), commandes, litiges |
+| **Couche 7 — Avis & notifications** | ✅ avis post-transaction ; notifications (lecture/gestion) |
+| **Couche 8 — Vues marketplace & feed** | ✅ filtres, tri, pagination |
+| **Couche 9 — Studio IA** | ✅ caption / SEO / description via AI Gateway (`ai`) |
+
+### Suivis backend à câbler (hors périmètre code client, RLS oblige)
+- **Migration `005_storage_media.sql`** : à appliquer sur Supabase (bucket + policies Storage).
+- **Notifications** : génération (sale, new_bid, new_follower…) via triggers DB ou webhook (service_role) — l'insert client est interdit par la RLS.
+- **Enchères** : clôture à l'échéance + attribution `winner_user_id` via tâche planifiée (aucun trigger, update réservé au vendeur).
+- **Paiements** : le webhook Stripe fait évoluer `payment_status`/`payout_status` et résout le compte vendeur pour le payout.
 
 Projet Supabase : `dhinegywctxmhepgempp` (région eu-central-2).
 Projet Vercel : `drip-haus-dev`, équipe `Yann's projects`.
