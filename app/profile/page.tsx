@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
+import { getMyBoutiques } from "@/lib/queries/boutiques";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export const metadata = { title: "Mon profil" };
@@ -20,7 +23,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function ProfilePage() {
-  const { email, account, profile } = await requireUser();
+  const { authId, email, account, profile } = await requireUser();
+  const boutiques = await getMyBoutiques(authId);
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -69,6 +73,39 @@ export default async function ProfilePage() {
           </p>
         )}
       </Card>
+
+      <section className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Mes boutiques</h2>
+          <Link href="/boutiques/new">
+            <Button variant="outline" size="sm">Créer une boutique</Button>
+          </Link>
+        </div>
+        {boutiques.length === 0 ? (
+          <p className="text-sm text-muted">Tu n&apos;as pas encore de boutique.</p>
+        ) : (
+          <ul className="divide-y divide-border rounded-xl border border-border">
+            {boutiques.map((b) => (
+              <li key={b.id} className="flex items-center justify-between gap-3 p-3">
+                <div>
+                  <Link href={`/boutique/${b.handle}`} className="font-medium hover:underline">
+                    {b.name}
+                  </Link>
+                  <p className="text-xs text-muted">@{b.handle}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge tone={b.role === "owner" ? "info" : "neutral"}>
+                    {b.role === "owner" ? "Propriétaire" : "Manager"}
+                  </Badge>
+                  <Link href={`/boutique/${b.handle}/manage`} className="text-sm underline underline-offset-4">
+                    Gérer
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="mt-8">
         <h2 className="mb-4 text-lg font-semibold">Éditer mon profil</h2>
