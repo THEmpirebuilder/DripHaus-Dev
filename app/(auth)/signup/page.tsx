@@ -1,14 +1,19 @@
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth/session";
+import { SignupForm } from "@/components/auth/signup-form";
+
 export const metadata = { title: "Créer un compte" };
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  if (await getSessionUser()) redirect("/profile");
+
   return (
-    <main className="mx-auto max-w-sm px-6 py-24">
+    <div>
       <h1 className="text-2xl font-semibold">Créer un compte</h1>
-      {/*
-        Le rôle (particulier | createur | boutique) se transmet dans les
-        metadata du signup : supabase.auth.signUp({ options: { data: { role } } }).
-        Le trigger on_auth_user_created crée alors public.users + public.profiles.
-      */}
-    </main>
+      <p className="mt-1 mb-6 text-sm text-muted">
+        Rejoins la communauté suisse de la mode indépendante.
+      </p>
+      <SignupForm />
+    </div>
   );
 }

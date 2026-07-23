@@ -27,7 +27,9 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | Fonctions Stripe Connect | ✅ `lib/stripe/connect.ts` |
 | Webhook Stripe | ✅ `app/api/webhooks/stripe/route.ts` déployé |
 | Déploiement Vercel | ✅ production sur `drip-haus-dev.vercel.app` |
-| **Code applicatif (UI + logique métier)** | ⏳ **Étape 5 — à construire** |
+| Design tokens + primitives UI (`components/ui/`) | ✅ Button, Input, Textarea, Select, Label, Alert, Card, Avatar, SubmitButton |
+| **Couche 1 — Auth & utilisateurs** | ✅ signup (rôle), login, logout, session, profil (édition + public `/u/[username]`) |
+| **Couches 2 → 9 (boutiques, articles, social, enchères, paiements…)** | ⏳ **à construire** |
 
 Projet Supabase : `dhinegywctxmhepgempp` (région eu-central-2).
 Projet Vercel : `drip-haus-dev`, équipe `Yann's projects`.

@@ -1,15 +1,53 @@
 @import "tailwindcss";
 
+/*
+  Tokens de design DripHaus — source unique de la charte.
+  Refondre le design = modifier ces variables, jamais les composants.
+  Aucune couleur en dur ailleurs (voir CLAUDE.md §4).
+*/
 :root {
   --background: #ffffff;
   --foreground: #0a0a0a;
+  --muted: #6b7280; /* texte secondaire */
+  --surface: #ffffff; /* fond des cartes */
+  --surface-elevated: #f9fafb; /* champs, zones surélevées */
+  --border: #e5e7eb;
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --destructive: #dc2626;
+  --success: #16a34a;
+  --ring: #111827;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #fafafa;
+    --muted: #9ca3af;
+    --surface: #111113;
+    --surface-elevated: #17171a;
+    --border: #27272a;
+    --primary: #fafafa;
+    --primary-foreground: #0a0a0a;
+    --destructive: #f87171;
+    --success: #4ade80;
+    --ring: #fafafa;
   }
+}
+
+/* Exposition des tokens comme utilitaires Tailwind (bg-surface, text-muted, …). */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-ring: var(--ring);
 }
 
 body {
