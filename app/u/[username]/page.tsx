@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProfileByUsername } from "@/lib/queries/profiles";
+import { getArticlesBySeller } from "@/lib/queries/articles";
 import { Avatar } from "@/components/ui/avatar";
+import { ArticleGrid } from "@/components/article/article-grid";
 
 type Params = { username: string };
 
@@ -24,6 +26,8 @@ export default async function PublicProfilePage({
   const { username } = await params;
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
+
+  const articles = await getArticlesBySeller({ userId: profile.user_id });
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -60,6 +64,11 @@ export default async function PublicProfilePage({
           </div>
         )}
       </dl>
+
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-semibold">Articles</h2>
+        <ArticleGrid articles={articles} emptyLabel="Aucun article en vente." />
+      </section>
     </main>
   );
 }

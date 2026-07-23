@@ -19,10 +19,15 @@ export async function SiteHeader() {
 
         <nav className="flex items-center gap-3">
           {user ? (
-            <Link href="/profile" className="flex items-center gap-2 text-sm font-medium">
-              <Avatar src={user.profile.avatar_url} name={user.profile.display_name} size={32} />
-              <span className="hidden sm:inline">{user.profile.display_name ?? "Mon profil"}</span>
-            </Link>
+            <>
+              <Link href="/articles/new" className="text-sm font-medium">
+                Vendre
+              </Link>
+              <Link href="/profile" className="flex items-center gap-2 text-sm font-medium">
+                <Avatar src={user.profile.avatar_url} name={user.profile.display_name} size={32} />
+                <span className="hidden sm:inline">{user.profile.display_name ?? "Mon profil"}</span>
+              </Link>
+            </>
           ) : (
             <>
               <Link href="/login" className="text-sm font-medium">

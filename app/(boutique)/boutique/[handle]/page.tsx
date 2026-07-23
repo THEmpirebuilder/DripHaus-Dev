@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBoutiqueByHandle, getBoutiqueMembers } from "@/lib/queries/boutiques";
+import { getArticlesBySeller } from "@/lib/queries/articles";
 import { getSessionUser } from "@/lib/auth/session";
 import { BoutiqueHeader } from "@/components/boutique/boutique-header";
+import { ArticleGrid } from "@/components/article/article-grid";
 import { Avatar } from "@/components/ui/avatar";
 
 type Props = { params: Promise<{ handle: string }> };
@@ -18,8 +20,9 @@ export default async function BoutiquePage({ params }: Props) {
   const boutique = await getBoutiqueByHandle(handle);
   if (!boutique) notFound();
 
-  const [members, viewer] = await Promise.all([
+  const [members, articles, viewer] = await Promise.all([
     getBoutiqueMembers(boutique.id),
+    getArticlesBySeller({ boutiqueId: boutique.id }),
     getSessionUser(),
   ]);
   const isMember = members.some((m) => m.user_id === viewer?.authId);
@@ -51,6 +54,11 @@ export default async function BoutiquePage({ params }: Props) {
           ))}
         </div>
       )}
+
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-semibold">Articles</h2>
+        <ArticleGrid articles={articles} emptyLabel="Aucun article en vente pour le moment." />
+      </section>
     </main>
   );
 }
