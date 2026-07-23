@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { getBoutiqueByHandle, getBoutiqueMembers } from "@/lib/queries/boutiques";
 import { getArticlesBySeller } from "@/lib/queries/articles";
 import { getSessionUser } from "@/lib/auth/session";
+import { isFollowing } from "@/lib/queries/follows";
 import { BoutiqueHeader } from "@/components/boutique/boutique-header";
 import { ArticleGrid } from "@/components/article/article-grid";
+import { FollowButton } from "@/components/social/follow-button";
 import { Avatar } from "@/components/ui/avatar";
 
 type Props = { params: Promise<{ handle: string }> };
@@ -26,16 +28,23 @@ export default async function BoutiquePage({ params }: Props) {
     getSessionUser(),
   ]);
   const isMember = members.some((m) => m.user_id === viewer?.authId);
+  const viewerFollows =
+    viewer && !isMember ? await isFollowing(viewer.authId, { boutiqueId: boutique.id }) : false;
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
       <div className="flex items-start justify-between gap-4">
         <BoutiqueHeader boutique={boutique} showStatus={isMember} />
-        {isMember && (
-          <Link href={`/boutique/${handle}/manage`} className="shrink-0 text-sm underline underline-offset-4">
-            Gérer
-          </Link>
-        )}
+        <div className="flex shrink-0 items-center gap-3">
+          {viewer && !isMember && (
+            <FollowButton target={{ boutiqueId: boutique.id }} initialFollowing={viewerFollows} />
+          )}
+          {isMember && (
+            <Link href={`/boutique/${handle}/manage`} className="text-sm underline underline-offset-4">
+              Gérer
+            </Link>
+          )}
+        </div>
       </div>
 
       {members.length > 0 && (

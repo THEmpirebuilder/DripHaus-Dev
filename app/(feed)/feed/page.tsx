@@ -1,36 +1,39 @@
-import { createClient } from "@/lib/supabase/server";
+import { getFeed } from "@/lib/queries/posts";
+import { getSessionUser } from "@/lib/auth/session";
+import { getMyBoutiques } from "@/lib/queries/boutiques";
+import { PostComposer, type AuthorOption } from "@/components/social/post-composer";
+import { PostCard } from "@/components/social/post-card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const metadata = { title: "Feed" };
-export const dynamic = "force-dynamic";
 
 export default async function FeedPage() {
-  const supabase = await createClient();
+  const viewer = await getSessionUser();
+  const [posts, boutiques] = await Promise.all([
+    getFeed(viewer?.authId),
+    viewer ? getMyBoutiques(viewer.authId) : Promise.resolve([]),
+  ]);
 
-  const { data: posts, error } = await supabase
-    .from("posts")
-    .select("id, content, type, media, created_at")
-    .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .limit(30);
+  const authorOptions: AuthorOption[] = viewer
+    ? [
+        { value: "user", label: `Moi (${viewer.profile.display_name ?? "mon profil"})` },
+        ...boutiques.map((b) => ({ value: b.id, label: b.name })),
+      ]
+    : [];
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Feed</h1>
+    <main className="mx-auto max-w-2xl px-6 py-12">
+      <h1 className="mb-6 text-2xl font-semibold">Feed</h1>
 
-      {error && <p className="mt-6 text-sm text-red-600">{error.message}</p>}
+      {viewer && <PostComposer userId={viewer.authId} authorOptions={authorOptions} />}
 
-      {!error && posts?.length === 0 && (
-        <p className="mt-6 opacity-60">Le feed est encore vide.</p>
-      )}
-
-      <ul className="mt-10 space-y-6">
-        {posts?.map((p) => (
-          <li key={p.id} className="rounded-lg border border-black/10 p-5 dark:border-white/15">
-            <p className="text-xs uppercase tracking-wide opacity-50">{p.type}</p>
-            {p.content && <p className="mt-2">{p.content}</p>}
-          </li>
-        ))}
-      </ul>
+      <div className="mt-6 space-y-6">
+        {posts.length === 0 ? (
+          <EmptyState title="Le feed est encore vide." description="Sois le premier à publier." />
+        ) : (
+          posts.map((post) => <PostCard key={post.id} post={post} />)
+        )}
+      </div>
     </main>
   );
 }

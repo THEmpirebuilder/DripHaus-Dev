@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProfileByUsername } from "@/lib/queries/profiles";
 import { getArticlesBySeller } from "@/lib/queries/articles";
+import { getSessionUser } from "@/lib/auth/session";
+import { isFollowing, getFollowerCount } from "@/lib/queries/follows";
 import { Avatar } from "@/components/ui/avatar";
 import { ArticleGrid } from "@/components/article/article-grid";
+import { FollowButton } from "@/components/social/follow-button";
 
 type Params = { username: string };
 
@@ -27,16 +30,29 @@ export default async function PublicProfilePage({
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
 
-  const articles = await getArticlesBySeller({ userId: profile.user_id });
+  const [articles, viewer, followerCount] = await Promise.all([
+    getArticlesBySeller({ userId: profile.user_id }),
+    getSessionUser(),
+    getFollowerCount({ userId: profile.user_id }),
+  ]);
+
+  const isSelf = viewer?.authId === profile.user_id;
+  const viewerFollows = viewer && !isSelf ? await isFollowing(viewer.authId, { userId: profile.user_id }) : false;
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
-      <div className="flex items-center gap-4">
-        <Avatar src={profile.avatar_url} name={profile.display_name} size={72} />
-        <div>
-          <h1 className="text-2xl font-semibold">{profile.display_name ?? `@${username}`}</h1>
-          <p className="text-sm text-muted">@{username}</p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Avatar src={profile.avatar_url} name={profile.display_name} size={72} />
+          <div>
+            <h1 className="text-2xl font-semibold">{profile.display_name ?? `@${username}`}</h1>
+            <p className="text-sm text-muted">@{username}</p>
+            <p className="text-xs text-muted">{followerCount} abonné{followerCount > 1 ? "s" : ""}</p>
+          </div>
         </div>
+        {viewer && !isSelf && (
+          <FollowButton target={{ userId: profile.user_id }} initialFollowing={viewerFollows} />
+        )}
       </div>
 
       {profile.bio && <p className="mt-6 whitespace-pre-line">{profile.bio}</p>}

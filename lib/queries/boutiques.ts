@@ -36,6 +36,23 @@ export async function getBoutiqueMembers(boutiqueId: string): Promise<BoutiqueMe
   })) as BoutiqueMember[];
 }
 
+export type BoutiqueLite = Pick<Tables<"boutiques">, "id" | "name" | "handle" | "logo_url">;
+
+/** Boutiques (identité publique) indexées par id, pour résoudre des auteurs en lot. */
+export async function getBoutiquesByIds(ids: string[]): Promise<Map<string, BoutiqueLite>> {
+  const unique = [...new Set(ids)].filter(Boolean);
+  if (unique.length === 0) return new Map();
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("boutiques")
+    .select("id, name, handle, logo_url")
+    .in("id", unique);
+  if (error) throw error;
+
+  return new Map((data ?? []).map((b) => [b.id, b]));
+}
+
 /** Boutiques dont l'utilisateur est membre (owner ou manager). */
 export async function getMyBoutiques(userId: string): Promise<Array<Boutique & { role: Tables<"boutique_members">["role"] }>> {
   const supabase = await createClient();
