@@ -4,8 +4,11 @@ import { getProfileByUsername } from "@/lib/queries/profiles";
 import { getArticlesBySeller } from "@/lib/queries/articles";
 import { getSessionUser } from "@/lib/auth/session";
 import { isFollowing, getFollowerCount } from "@/lib/queries/follows";
+import { getReviewsAbout, getRatingSummary } from "@/lib/queries/reviews";
 import { Avatar } from "@/components/ui/avatar";
+import { Rating } from "@/components/ui/rating";
 import { ArticleGrid } from "@/components/article/article-grid";
+import { ReviewList } from "@/components/review/review-list";
 import { FollowButton } from "@/components/social/follow-button";
 
 type Params = { username: string };
@@ -30,10 +33,12 @@ export default async function PublicProfilePage({
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
 
-  const [articles, viewer, followerCount] = await Promise.all([
+  const [articles, viewer, followerCount, rating, reviews] = await Promise.all([
     getArticlesBySeller({ userId: profile.user_id }),
     getSessionUser(),
     getFollowerCount({ userId: profile.user_id }),
+    getRatingSummary({ userId: profile.user_id }),
+    getReviewsAbout({ userId: profile.user_id }),
   ]);
 
   const isSelf = viewer?.authId === profile.user_id;
@@ -48,6 +53,7 @@ export default async function PublicProfilePage({
             <h1 className="text-2xl font-semibold">{profile.display_name ?? `@${username}`}</h1>
             <p className="text-sm text-muted">@{username}</p>
             <p className="text-xs text-muted">{followerCount} abonné{followerCount > 1 ? "s" : ""}</p>
+            {rating.count > 0 && <Rating value={rating.average} count={rating.count} className="mt-1" />}
           </div>
         </div>
         {viewer && !isSelf && (
@@ -84,6 +90,11 @@ export default async function PublicProfilePage({
       <section className="mt-10">
         <h2 className="mb-4 text-lg font-semibold">Articles</h2>
         <ArticleGrid articles={articles} emptyLabel="Aucun article en vente." />
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-semibold">Avis</h2>
+        <ReviewList reviews={reviews} />
       </section>
     </main>
   );

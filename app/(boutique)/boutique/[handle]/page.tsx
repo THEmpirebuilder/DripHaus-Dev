@@ -4,9 +4,12 @@ import { getBoutiqueByHandle, getBoutiqueMembers } from "@/lib/queries/boutiques
 import { getArticlesBySeller } from "@/lib/queries/articles";
 import { getSessionUser } from "@/lib/auth/session";
 import { isFollowing } from "@/lib/queries/follows";
+import { getReviewsAbout, getRatingSummary } from "@/lib/queries/reviews";
 import { BoutiqueHeader } from "@/components/boutique/boutique-header";
 import { ArticleGrid } from "@/components/article/article-grid";
+import { ReviewList } from "@/components/review/review-list";
 import { FollowButton } from "@/components/social/follow-button";
+import { Rating } from "@/components/ui/rating";
 import { Avatar } from "@/components/ui/avatar";
 
 type Props = { params: Promise<{ handle: string }> };
@@ -22,10 +25,12 @@ export default async function BoutiquePage({ params }: Props) {
   const boutique = await getBoutiqueByHandle(handle);
   if (!boutique) notFound();
 
-  const [members, articles, viewer] = await Promise.all([
+  const [members, articles, viewer, rating, reviews] = await Promise.all([
     getBoutiqueMembers(boutique.id),
     getArticlesBySeller({ boutiqueId: boutique.id }),
     getSessionUser(),
+    getRatingSummary({ boutiqueId: boutique.id }),
+    getReviewsAbout({ boutiqueId: boutique.id }),
   ]);
   const isMember = members.some((m) => m.user_id === viewer?.authId);
   const viewerFollows =
@@ -64,9 +69,16 @@ export default async function BoutiquePage({ params }: Props) {
         </div>
       )}
 
+      {rating.count > 0 && <Rating value={rating.average} count={rating.count} className="mt-4" />}
+
       <section className="mt-10">
         <h2 className="mb-4 text-lg font-semibold">Articles</h2>
         <ArticleGrid articles={articles} emptyLabel="Aucun article en vente pour le moment." />
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-semibold">Avis</h2>
+        <ReviewList reviews={reviews} />
       </section>
     </main>
   );

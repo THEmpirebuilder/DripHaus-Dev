@@ -10,6 +10,9 @@ import { Price } from "@/components/ui/price";
 import { Badge } from "@/components/ui/badge";
 import { PAYMENT_STATUS } from "@/components/checkout/transaction-card";
 import { DisputeForm } from "@/components/checkout/dispute-form";
+import { getMyReviewForTransaction } from "@/lib/queries/reviews";
+import { ReviewForm } from "@/components/review/review-form";
+import { Rating } from "@/components/ui/rating";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -32,6 +35,9 @@ export default async function OrderPage({ params }: Props) {
   const cover = toImageUrls(tx.article?.images ?? [])[0];
   const paymentStatus = PAYMENT_STATUS[tx.payment_status];
   const canDispute = !tx.dispute && ["paid", "held"].includes(tx.payment_status);
+
+  const myReview = await getMyReviewForTransaction(tx.id, user.authId);
+  const canReview = !myReview && ["paid", "held"].includes(tx.payment_status);
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -90,6 +96,28 @@ export default async function OrderPage({ params }: Props) {
           <p className="text-sm text-muted">
             Aucun litige. Tu pourras en ouvrir un une fois le paiement encaissé.
           </p>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-lg font-semibold">Avis</h2>
+        {myReview ? (
+          <Card>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted">Ton avis</span>
+              <Rating value={myReview.rating} />
+            </div>
+            {myReview.comment && <p className="mt-2 text-sm">{myReview.comment}</p>}
+          </Card>
+        ) : canReview ? (
+          <Card>
+            <p className="mb-3 text-sm text-muted">
+              Note {isBuyer ? "le vendeur" : "l'acheteur"} pour cette transaction.
+            </p>
+            <ReviewForm transactionId={tx.id} />
+          </Card>
+        ) : (
+          <p className="text-sm text-muted">Les avis seront disponibles une fois le paiement encaissé.</p>
         )}
       </section>
     </main>
