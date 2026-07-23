@@ -81,21 +81,32 @@ export async function getArticlesBySeller(params: {
   return data ?? [];
 }
 
+export type ArticleSort = "recent" | "price_asc" | "price_desc";
+
 export type ArticleFilters = {
   q?: string;
   categoryId?: string;
   condition?: Enums<"article_condition">;
-  sort?: "recent" | "price_asc" | "price_desc";
-  limit?: number;
+  sort?: ArticleSort;
+  page?: number;
+  pageSize?: number;
 };
 
+export type ArticlePage = { items: Article[]; page: number; hasMore: boolean };
+
+export const ARTICLES_PAGE_SIZE = 24;
+
 /**
- * Listing marketplace : articles publiés (`active`), avec filtres/tri.
- * La RLS élargit la visibilité au propriétaire, mais on cible `active` ici.
+ * Listing marketplace paginé : articles publiés (`active`), filtres + tri.
+ * `hasMore` déduit en demandant un élément de plus que la page.
  */
-export async function listArticles(filters: ArticleFilters = {}): Promise<Article[]> {
+export async function listArticles(filters: ArticleFilters = {}): Promise<ArticlePage> {
   const supabase = await createClient();
-  let query = supabase.from("articles").select("*").eq("status", "active");
+  const page = Math.max(0, filters.page ?? 0);
+  const pageSize = filters.pageSize ?? ARTICLES_PAGE_SIZE;
+  const from = page * pageSize;
+
+  let query = supabase.from("articles").select("*").eq("status", "active").eq("is_auction", false);
 
   if (filters.q) query = query.ilike("title", `%${filters.q}%`);
   if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
@@ -112,9 +123,13 @@ export async function listArticles(filters: ArticleFilters = {}): Promise<Articl
       query = query.order("created_at", { ascending: false });
   }
 
-  query = query.limit(filters.limit ?? 48);
+  // On demande pageSize+1 pour savoir s'il existe une page suivante.
+  query = query.range(from, from + pageSize);
 
   const { data, error } = await query;
   if (error) throw error;
-  return data ?? [];
+
+  const rows = data ?? [];
+  const hasMore = rows.length > pageSize;
+  return { items: hasMore ? rows.slice(0, pageSize) : rows, page, hasMore };
 }

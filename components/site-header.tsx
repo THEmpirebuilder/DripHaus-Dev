@@ -15,9 +15,16 @@ export async function SiteHeader() {
   return (
     <header className="border-b border-border">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
-          DripHaus
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-lg font-semibold tracking-tight">
+            DripHaus
+          </Link>
+          <nav className="hidden items-center gap-4 text-sm text-muted sm:flex">
+            <Link href="/marketplace" className="hover:text-foreground">Marketplace</Link>
+            <Link href="/feed" className="hover:text-foreground">Feed</Link>
+            <Link href="/auctions" className="hover:text-foreground">Enchères</Link>
+          </nav>
+        </div>
 
         <nav className="flex items-center gap-3">
           {user ? (

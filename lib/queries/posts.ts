@@ -92,6 +92,29 @@ export async function getFeed(viewerId?: string, limit = 30): Promise<FeedPost[]
   return decoratePosts((data ?? []) as RawPost[], viewerId);
 }
 
+export const FEED_PAGE_SIZE = 20;
+
+export type FeedPage = { items: FeedPost[]; page: number; hasMore: boolean };
+
+/** Feed paginé (Précédent / Suivant). */
+export async function getFeedPage(viewerId?: string, page = 0, pageSize = FEED_PAGE_SIZE): Promise<FeedPage> {
+  const supabase = await createClient();
+  const from = Math.max(0, page) * pageSize;
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select(POST_SELECT)
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .range(from, from + pageSize); // pageSize+1 pour déduire hasMore
+  if (error) throw error;
+
+  const rows = (data ?? []) as RawPost[];
+  const hasMore = rows.length > pageSize;
+  const items = await decoratePosts(hasMore ? rows.slice(0, pageSize) : rows, viewerId);
+  return { items, page: Math.max(0, page), hasMore };
+}
+
 /** Un post enrichi (ou null). */
 export async function getPostById(id: string, viewerId?: string): Promise<FeedPost | null> {
   const supabase = await createClient();
