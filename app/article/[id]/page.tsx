@@ -104,6 +104,11 @@ export default async function ArticlePage({ params }: Props) {
                 <Link href={`/article/${article.id}/edit`}>
                   <Button variant="outline">Modifier</Button>
                 </Link>
+                {!article.is_auction && article.status === "active" && (
+                  <Link href="/auctions/new">
+                    <Button variant="outline">Mettre aux enchères</Button>
+                  </Link>
+                )}
                 <form action={archiveArticleAction}>
                   <input type="hidden" name="article_id" value={article.id} />
                   <Button type="submit" variant="ghost">Archiver</Button>

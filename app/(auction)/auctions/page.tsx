@@ -1,41 +1,35 @@
-import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import { listAuctions } from "@/lib/queries/auctions";
+import { getSessionUser } from "@/lib/auth/session";
+import { AuctionCard } from "@/components/auction/auction-card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "Enchères" };
-export const dynamic = "force-dynamic";
 
 export default async function AuctionsPage() {
-  const supabase = await createClient();
-
-  const { data: auctions, error } = await supabase
-    .from("auctions")
-    .select("id, starting_price, current_price, ends_at, status, articles(title, brand)")
-    .eq("status", "active")
-    .order("ends_at", { ascending: true })
-    .limit(24);
+  const [auctions, viewer] = await Promise.all([listAuctions(), getSessionUser()]);
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Enchères en cours</h1>
+    <main className="mx-auto max-w-5xl px-6 py-12">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Enchères en cours</h1>
+        {viewer && (
+          <Link href="/auctions/new">
+            <Button size="sm">Lancer une enchère</Button>
+          </Link>
+        )}
+      </div>
 
-      {error && <p className="mt-6 text-sm text-red-600">{error.message}</p>}
-
-      {!error && auctions?.length === 0 && (
-        <p className="mt-6 opacity-60">Aucune enchère active.</p>
+      {auctions.length === 0 ? (
+        <EmptyState title="Aucune enchère en cours." description="Reviens bientôt, ou lance la tienne." />
+      ) : (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {auctions.map((a) => (
+            <AuctionCard key={a.id} auction={a} />
+          ))}
+        </div>
       )}
-
-      <ul className="mt-10 grid gap-6 sm:grid-cols-2">
-        {auctions?.map((a) => (
-          <li key={a.id} className="rounded-lg border border-black/10 p-5 dark:border-white/15">
-            <p className="font-medium">{a.articles?.title ?? "Article"}</p>
-            <p className="mt-2 text-sm">
-              {a.current_price ?? a.starting_price} CHF
-            </p>
-            <p className="mt-1 text-xs opacity-50">
-              Fin : {new Date(a.ends_at).toLocaleString("fr-CH")}
-            </p>
-          </li>
-        ))}
-      </ul>
     </main>
   );
 }
