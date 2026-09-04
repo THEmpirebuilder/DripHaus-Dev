@@ -11,7 +11,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 
 const initial: BoutiqueFormState = {};
 
-export function BoutiqueSettingsForm({ boutique }: { boutique: Tables<"boutiques"> }) {
+export function BoutiqueSettingsForm({ boutique }: { boutique: Omit<Tables<"boutiques">, "stripe_account_id" | "siret_ide"> }) {
   const [state, formAction] = useActionState(updateBoutiqueAction, initial);
 
   return (

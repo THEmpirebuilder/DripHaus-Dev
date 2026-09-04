@@ -1,7 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
 
-export type Boutique = Tables<"boutiques">;
+/**
+ * Boutique sans les colonnes sensibles (`stripe_account_id`, `siret_ide`),
+ * masquées aux rôles anon/authenticated par la migration 008 : ces champs ne
+ * sont accessibles qu'en service_role (webhook Stripe / checkout).
+ */
+export type BoutiquePublic = Omit<Tables<"boutiques">, "stripe_account_id" | "siret_ide">;
+export type Boutique = BoutiquePublic;
+
+/** Colonnes boutiques lisibles par les rôles publics (cf. migration 008). */
+const BOUTIQUE_PUBLIC_COLUMNS =
+  "id, handle, name, description, logo_url, cover_url, address, phone, email_contact, website_url, social_links, business_hours, kyc_verified, subscription_tier, status, created_at, updated_at";
 
 /** Membre de boutique enrichi de son profil public. */
 export type BoutiqueMember = Tables<"boutique_members"> & {
@@ -9,11 +19,11 @@ export type BoutiqueMember = Tables<"boutique_members"> & {
 };
 
 /** Boutique par handle. RLS : visible si active, ou si l'appelant en est membre. */
-export async function getBoutiqueByHandle(handle: string): Promise<Boutique | null> {
+export async function getBoutiqueByHandle(handle: string): Promise<BoutiquePublic | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("boutiques")
-    .select("*")
+    .select(BOUTIQUE_PUBLIC_COLUMNS)
     .eq("handle", handle)
     .maybeSingle();
   if (error) throw error;
@@ -54,15 +64,15 @@ export async function getBoutiquesByIds(ids: string[]): Promise<Map<string, Bout
 }
 
 /** Boutiques dont l'utilisateur est membre (owner ou manager). */
-export async function getMyBoutiques(userId: string): Promise<Array<Boutique & { role: Tables<"boutique_members">["role"] }>> {
+export async function getMyBoutiques(userId: string): Promise<Array<BoutiquePublic & { role: Tables<"boutique_members">["role"] }>> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("boutique_members")
-    .select("role, boutique:boutiques!inner(*)")
+    .select(`role, boutique:boutiques!inner(${BOUTIQUE_PUBLIC_COLUMNS})`)
     .eq("user_id", userId);
   if (error) throw error;
   return (data ?? []).map((row) => {
-    const boutique = (Array.isArray(row.boutique) ? row.boutique[0] : row.boutique) as Boutique;
+    const boutique = (Array.isArray(row.boutique) ? row.boutique[0] : row.boutique) as BoutiquePublic;
     return { ...boutique, role: row.role };
   });
 }

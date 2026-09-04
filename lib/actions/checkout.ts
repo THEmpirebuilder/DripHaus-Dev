@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/auth/session";
 import { createEscrowPaymentIntent } from "@/lib/stripe/connect";
 import { platformFee, toMinorUnits } from "@/lib/stripe/client";
@@ -37,7 +38,11 @@ export async function startCheckout(articleId: string): Promise<CheckoutResult> 
   const feeChf = platformFee(toMinorUnits(amount)) / 100;
   const transactionId = randomUUID();
 
-  const { error: txError } = await supabase.from("transactions").insert({
+  // Création en service_role : le client n'a plus le droit d'insérer dans
+  // `transactions` (migration 008). Le montant est dérivé côté serveur du prix
+  // de l'article — impossible pour l'acheteur d'imposer un amount/seller arbitraire.
+  const admin = createAdminClient();
+  const { error: txError } = await admin.from("transactions").insert({
     id: transactionId,
     buyer_user_id: user.authId,
     seller_user_id: article.seller_user_id,
@@ -52,12 +57,12 @@ export async function startCheckout(articleId: string): Promise<CheckoutResult> 
 
   if (txError) return { error: txError.message };
 
-  // Compte vendeur : lisible pour une boutique active ; pour un vendeur
-  // particulier, la RLS le masque à l'acheteur — le payout (webhook,
-  // service_role) le résoudra depuis la transaction.
+  // Compte vendeur boutique : `stripe_account_id` est masqué aux rôles publics
+  // (migration 008), on le lit en service_role. Pour un vendeur particulier, le
+  // payout (webhook) le résoudra depuis la transaction.
   let sellerAccountId = "";
   if (article.seller_boutique_id) {
-    const { data: boutique } = await supabase
+    const { data: boutique } = await admin
       .from("boutiques")
       .select("stripe_account_id")
       .eq("id", article.seller_boutique_id)

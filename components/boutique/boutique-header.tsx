@@ -13,7 +13,7 @@ export function BoutiqueHeader({
   boutique,
   showStatus = false,
 }: {
-  boutique: Tables<"boutiques">;
+  boutique: Omit<Tables<"boutiques">, "stripe_account_id" | "siret_ide">;
   showStatus?: boolean;
 }) {
   const status = STATUS[boutique.status];

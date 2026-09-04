@@ -38,10 +38,20 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | **Couche 8 — Vues marketplace & feed** | ✅ filtres, tri, pagination |
 | **Couche 9 — Studio IA** | ✅ caption / SEO / description via AI Gateway (`ai`) |
 
-### Migrations à appliquer sur Supabase (écrites, non jouées)
-- **`005_storage_media.sql`** : bucket `media` + policies Storage (sinon l'upload d'images échoue).
-- **`006_notifications_triggers.sql`** : triggers `new_follower`/`new_like`/`new_comment`/`new_bid` (l'insert client sur `notifications` est interdit par la RLS).
-- **`007_close_auctions_cron.sql`** : clôture des enchères échues + `winner_user_id` + notifs `auction_won`/`sale`, via `pg_cron` (activer l'extension). Marque l'article `reserved`.
+### Migrations Supabase — 001→008 **toutes appliquées** (projet `dhinegywctxmhepgempp`)
+- `005_storage_media.sql` : bucket `media` + policies Storage.
+- `006_notifications_triggers.sql` : triggers `new_follower`/`new_like`/`new_comment`/`new_bid`.
+- `007_close_auctions_cron.sql` : clôture enchères échues + `winner_user_id` + notifs, via `pg_cron`.
+- **`008_lock_sensitive_data.sql`** (2026-09-05, correctifs P0 audit) : masque `stripe_account_id`/`siret_ide`
+  des boutiques aux rôles `anon`/`authenticated` (privilèges de colonne → lire ces champs impose le client
+  **admin/service_role**) ; supprime la policy `tx_insert_buyer` (plus d'insert client dans `transactions` :
+  création via `startCheckout` en service_role) ; restreint le bucket `media` (MIME images + 8 Mo).
+  ⚠️ Corollaire code : ne jamais faire `select("*")` sur `boutiques` en client (colonnes masquées → erreur) —
+  passer par `BOUTIQUE_PUBLIC_COLUMNS` / le type `BoutiquePublic` (`lib/queries/boutiques.ts`).
+
+> **À faire (WB1, non fait)** : activer la protection mots de passe compromis (toggle dashboard Supabase
+> Auth — seul WARN advisor restant) ; rate-limiting/anti-bot ; CSP ; migration `009` RLS perf
+> `(select auth.uid())` + nettoyage index.
 
 ### Câblé côté serveur
 - **Webhook Stripe** (`app/api/webhooks/stripe/route.ts`) : `held`/`payout` + marque l'article `sold` à l'encaissement, et émet les notifs `sale`/`payout` (service_role). Reste à déclencher `releaseSellerPayout` après confirmation de livraison (résout alors le compte vendeur).
