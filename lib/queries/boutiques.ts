@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getProfilesByUserIds } from "@/lib/queries/profiles";
 import type { Tables } from "@/types/database";
 
 /**
@@ -30,20 +31,30 @@ export async function getBoutiqueByHandle(handle: string): Promise<BoutiquePubli
   return data;
 }
 
-/** Membres d'une boutique, avec profil public. */
+/**
+ * Membres d'une boutique, avec profil public.
+ * `boutique_members` et `profiles` n'ont PAS de FK directe (liées via `users`) →
+ * l'embedding PostgREST `profiles!inner` échoue (PGRST200). On résout donc les
+ * profils en 2 temps (même pattern que `reviews.ts`).
+ */
 export async function getBoutiqueMembers(boutiqueId: string): Promise<BoutiqueMember[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("boutique_members")
-    .select("*, profile:profiles!inner(username, display_name, avatar_url)")
+    .select("*")
     .eq("boutique_id", boutiqueId)
     .order("joined_at", { ascending: true });
   if (error) throw error;
-  // La jointure renvoie un tableau ; on prend le profil unique par user.
-  return (data ?? []).map((m) => ({
-    ...m,
-    profile: Array.isArray(m.profile) ? m.profile[0] ?? null : m.profile,
-  })) as BoutiqueMember[];
+
+  const rows = data ?? [];
+  const profiles = await getProfilesByUserIds(rows.map((m) => m.user_id));
+  return rows.map((m) => {
+    const p = profiles.get(m.user_id);
+    return {
+      ...m,
+      profile: p ? { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url } : null,
+    };
+  });
 }
 
 export type BoutiqueLite = Pick<Tables<"boutiques">, "id" | "name" | "handle" | "logo_url">;
