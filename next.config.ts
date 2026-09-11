@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
+      // Packshots de démo (catalogue seedé) — licence Pexels.
+      { protocol: "https", hostname: "images.pexels.com", pathname: "/**" },
+      // Avatars/logos de démo générés (DiceBear, format PNG).
+      { protocol: "https", hostname: "api.dicebear.com", pathname: "/**" },
     ],
   },
   async headers() {
