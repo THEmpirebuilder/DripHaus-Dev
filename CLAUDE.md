@@ -56,8 +56,17 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 ### Câblé côté serveur
 - **Webhook Stripe** (`app/api/webhooks/stripe/route.ts`) : `held`/`payout` + marque l'article `sold` à l'encaissement, et émet les notifs `sale`/`payout` (service_role). Reste à déclencher `releaseSellerPayout` après confirmation de livraison (résout alors le compte vendeur).
 
+### Données de démo (WS0 — seedées 2026-09-11)
+- Décor de démonstration seedé : **33 catégories, 13 comptes bots, 3 boutiques (Suisse romande),
+  53 articles (images dans le bucket Storage `media`), activité sociale + 1 enchère**. Marqueur des
+  comptes bots : email `@demo.driphaus.ch`. SQL idempotent versionné dans **`supabase/seed/`** (voir
+  son `README.md` pour l'ordre + le pipeline images Pexels→Storage via `scripts/`). Rejouable sans
+  doublon. Insertion **directe** (service_role) ; le pilotage complet de l'UI par les bots est prévu
+  pour la phase « Tests bots » ultérieure.
+
 ### Variables d'environnement
 - `NEXT_PUBLIC_SITE_URL` (liens de confirmation e-mail), `AI_GATEWAY_API_KEY` (Studio IA), en plus des clés Stripe/Supabase déjà attendues.
+- Outils de seed (dans `.env.local`, gitignoré) : `PEXELS_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
 
 Projet Supabase : `dhinegywctxmhepgempp` (région eu-central-2).
 Projet Vercel : `drip-haus-dev`, équipe `Yann's projects`.

@@ -12,15 +12,22 @@ fois qu'on veut, l'état final est identique (pas de doublon, pas d'erreur). Mé
 
 ## Fichiers (ordre d'exécution)
 
-| # | Fichier | Contenu | Dépend de |
+| # | Fichier / script | Contenu | Dépend de |
 |---|---|---|---|
-| 01 | `01_categories.sql` | Taxonomie (5 familles + sous-catégories) | — |
-| 02 | `02_users_boutiques.sql` | Comptes bots (auth + profils) + boutiques bots | 01 |
-| 03 | `03_articles.sql` | Articles + galerie images (Storage) | 01, 02, packshots |
-| 04 | `04_social.sql` | Posts, follows, likes, comments + 1 enchère | 02, 03 |
+| 01 | `01_categories.sql` | Taxonomie (5 familles + 33 sous-catégories) | — |
+| 02 | `02_users_boutiques.sql` | 13 comptes bots (auth + profils) + 3 boutiques | 01 |
+| — | `scripts/pexels-fetch.mjs` | Télécharge les packshots Pexels → `demo-assets/packshots/` + `manifest.json` | clé Pexels |
+| 03 | `03_articles.sql` *(généré)* | 53 articles ; `images` = URLs **Pexels** (temporaire) | 01, 02, manifeste |
+| — | `scripts/storage-migrate.mjs` | Upload des packshots dans le bucket `media` + repointe `articles.images` sur le **Storage** | 03, service_role |
+| 04 | `04_social.sql` | Posts, follows, likes, comments + 1 enchère (offres) | 02, 03 |
 
-> `03_articles.sql` dépend des **packshots** (photos libres de droits) importés dans
-> le bucket Storage `media`. Voir la note photos dans le journal Voie A.
+### Pipeline images (WS0 « seed direct + Storage »)
+`pexels-fetch.mjs` (download) → `03_articles.sql` (articles avec URLs Pexels) →
+`storage-migrate.mjs` (bascule les images dans notre Storage, plus de hotlink).
+`03_articles.sql` est **régénéré** par `scripts/build-catalogue.mjs` depuis le manifeste.
+
+> Clés dans `DripHaus-Dev/.env.local` (gitignoré) : `PEXELS_API_KEY`,
+> `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
 
 ## Exécution
 
