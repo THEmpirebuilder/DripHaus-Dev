@@ -1,41 +1,100 @@
 @import "tailwindcss";
 
 /*
-  Tokens de design DripHaus — source unique de la charte.
-  Refondre le design = modifier ces variables, jamais les composants.
-  Aucune couleur en dur ailleurs (voir CLAUDE.md §4).
+  Tokens de design DripHaus — source unique de la charte graphique (Édition 01).
+  Refondre le design = modifier ces variables, jamais les composants (voir CLAUDE.md §4).
+  Valeurs et ratios repris de la page « Tokens couleur » de la charte : tous les couples
+  texte/fond sont ≥ 4,5:1 (WCAG AA).
+
+  Deux ors :
+    --gold  #C9A24A  → décoratif UNIQUEMENT (losange, filets, gros aplats). Échoue AA sur blanc.
+    --accent #8E6335 → rôle texte/UI (liens, labels, focus). C'est le token à utiliser pour du texte.
+  L'or ne dépasse jamais 15 % d'une surface. L'argent est réservé à l'authentification.
+  Le noir pur est proscrit : toujours l'encre #14130F.
 */
+
 :root {
+  /* — rôles (clair) — */
   --background: #ffffff;
-  --foreground: #0a0a0a;
-  --muted: #6b7280; /* texte secondaire */
-  --surface: #ffffff; /* fond des cartes */
-  --surface-elevated: #f9fafb; /* champs, zones surélevées */
-  --border: #e5e7eb;
-  --primary: #111827;
+  --foreground: #14130f;
+  --muted: #6e6858;
+  --surface: #ffffff;
+  --surface-elevated: #faf8f4;
+  --border: #e8e3d9;
+  --primary: #14130f;
   --primary-foreground: #ffffff;
-  --destructive: #dc2626;
-  --success: #16a34a;
-  --ring: #111827;
+  --accent: #8e6335;
+  --accent-foreground: #ffffff;
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --success: #1e6b4a;
+  --ring: #8e6335;
+
+  /* — métaux & neutres de marque — */
+  --gold: #c9a24a;        /* décoratif : losange, filets, accents graphiques */
+  --gold-reflect: #e8ce94;
+  --gold-shadow: #9a7134;
+  --bronze: #8e6335;
+  --silver: #b9bfc5;      /* authentification : sceaux, badges vérifiés */
+  --silver-deep: #7f868d;
+  --ink: #14130f;
+  --paper: #ffffff;
+  --ecru: #f4f1ea;        /* écru calé : zones alternées */
+
+  /* — ombres froides et basses, jamais colorées — */
+  --ds-shadow-sm: 0 1px 2px 0 rgb(20 19 15 / 0.05);
+  --ds-shadow-md: 0 2px 6px -1px rgb(20 19 15 / 0.08), 0 1px 2px rgb(20 19 15 / 0.05);
+  --ds-shadow-lg: 0 10px 30px -8px rgb(20 19 15 / 0.14);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #fafafa;
-    --muted: #9ca3af;
-    --surface: #111113;
-    --surface-elevated: #17171a;
-    --border: #27272a;
-    --primary: #fafafa;
-    --primary-foreground: #0a0a0a;
-    --destructive: #f87171;
-    --success: #4ade80;
-    --ring: #fafafa;
+    --background: #12110f;
+    --foreground: #f5f1e8;
+    --muted: #a8a192;
+    --surface: #1a1815;
+    --surface-elevated: #221f1b;
+    --border: #332f28;
+    --primary: #e8ce94;
+    --primary-foreground: #14130f;
+    --accent: #d8b265;
+    --accent-foreground: #14130f;
+    --destructive: #e88b82;
+    --destructive-foreground: #14130f;
+    --success: #6fcb9a;
+    --ring: #e8ce94;
+
+    --gold: #d8b265;
+    --gold-reflect: #e8ce94;
+    --gold-shadow: #9a7134;
+    --bronze: #d8b265;
+    --silver: #b9bfc5;
+    --silver-deep: #a8a192;
+    --ink: #12110f;
+    --paper: #1a1815;
+    --ecru: #221f1b;
+
+    /* En thème sombre l'élévation passe par --surface-elevated, pas par l'ombre. */
+    --ds-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+    --ds-shadow-md: 0 2px 8px -2px rgb(0 0 0 / 0.45);
+    --ds-shadow-lg: 0 12px 34px -10px rgb(0 0 0 / 0.55);
   }
 }
 
-/* Exposition des tokens comme utilitaires Tailwind (bg-surface, text-muted, …). */
+/* Rayons — charte : 0 cartes/images · 2 px champs/boutons · pilule badges/avatars.
+   Volontairement encodés dans l'échelle : rounded-xl/2xl/md = angle droit,
+   rounded-lg/sm = 2 px, rounded-full = pilule. Refondre = changer ici. */
+@theme {
+  --radius-sm: 2px;
+  --radius-md: 0px;
+  --radius-lg: 2px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-full: 9999px;
+}
+
+/* Exposition des tokens comme utilitaires Tailwind (bg-surface, text-muted, text-accent, …). */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,12 +104,51 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-ring: var(--ring);
+
+  --color-gold: var(--gold);
+  --color-gold-reflect: var(--gold-reflect);
+  --color-gold-shadow: var(--gold-shadow);
+  --color-bronze: var(--bronze);
+  --color-silver: var(--silver);
+  --color-silver-deep: var(--silver-deep);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-ecru: var(--ecru);
+
+  /* Familles typographiques (chargées via next/font dans app/layout.tsx) */
+  --font-sans: var(--font-syne), "Helvetica Neue", Arial, sans-serif;
+  --font-serif: var(--font-italiana), "Cormorant Garamond", Georgia, serif;
+  --font-script: var(--font-italianno), "Snell Roundhand", cursive;
+
+  --shadow-sm: var(--ds-shadow-sm);
+  --shadow-md: var(--ds-shadow-md);
+  --shadow-lg: var(--ds-shadow-lg);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
+
+/* Titres éditoriaux : Italiana. Réservé aux gros titres ; h4 et en-dessous restent
+   en Syne (voir composants). Italiana ne descend jamais sous 17 px. */
+.font-serif { font-family: var(--font-serif); font-weight: 400; }
+.font-script { font-family: var(--font-script); font-weight: 400; }
+
+/* Micro-capitales de service (catégories, labels, badges) — Syne 500, 0.24em. */
+.u-label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+::selection { background: var(--gold-reflect); color: var(--ink); }

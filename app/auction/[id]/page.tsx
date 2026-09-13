@@ -69,7 +69,7 @@ export default async function AuctionPage({ params }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted">{auction.highestBid ? "Enchère actuelle" : "Prix de départ"}</p>
-                <Price amount={current} currency={currency} className="text-2xl" />
+                <Price amount={current} currency={currency} display className="text-3xl" />
                 <p className="mt-1 text-xs text-muted">{auction.bidCount} offre{auction.bidCount > 1 ? "s" : ""}</p>
               </div>
               <div className="text-right">
@@ -79,8 +79,11 @@ export default async function AuctionPage({ params }: Props) {
             </div>
 
             {auction.reserve_price != null && (
-              <p className="mt-3 text-xs text-muted">
-                {reserveMet ? "✓ Prix de réserve atteint" : "Prix de réserve non atteint"}
+              <p className={`mt-3 inline-flex items-center gap-1.5 text-xs ${reserveMet ? "text-success" : "text-muted"}`}>
+                {reserveMet && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
+                )}
+                {reserveMet ? "Prix de réserve atteint" : "Prix de réserve non atteint"}
               </p>
             )}
 

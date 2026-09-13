@@ -69,7 +69,7 @@ export async function createAuctionAction(
     auction_id: auctionId,
     article_id: articleId,
     type: "auction",
-    content: "Nouvelle enchère en ligne 🔨",
+    content: "Nouvelle enchère en ligne.",
     status: "published",
   });
 

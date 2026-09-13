@@ -40,7 +40,9 @@ export function LikeButton({
       )}
       aria-pressed={liked}
     >
-      <span aria-hidden>{liked ? "♥" : "♡"}</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M12 21C5 16 3 12 3 8.5A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 9 2.5C21 12 19 16 12 21z" />
+      </svg>
       <span className="tabular-nums">{count}</span>
     </button>
   );
