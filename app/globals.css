@@ -152,3 +152,9 @@ body {
 }
 
 ::selection { background: var(--gold-reflect); color: var(--ink); }
+
+/* Logo : en thème sombre, les parties encre du monogramme (H, filet, STORE) passent
+   en or clair pour rester lisibles sur fond sombre (l'artwork est pensé pour fond clair). */
+@media (prefers-color-scheme: dark) {
+  .dh-ink { fill: #e8ce94; stroke: #e8ce94; }
+}

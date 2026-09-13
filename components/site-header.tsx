@@ -25,7 +25,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <div className="flex items-center gap-9">
           <Link href="/" aria-label="DripHaus — accueil">
-            <Logo size={32} />
+            <Logo height={34} />
           </Link>
           <nav className="hidden items-center gap-7 sm:flex">
             {NAV.map((item) => (
