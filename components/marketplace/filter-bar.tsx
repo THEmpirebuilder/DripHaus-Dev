@@ -20,6 +20,16 @@ const SORTS = [
   { value: "price_desc", label: "Prix décroissant" },
 ];
 
+const GENDERS = [
+  { value: "", label: "Tous genres" },
+  { value: "femme", label: "Femme" },
+  { value: "homme", label: "Homme" },
+  { value: "fille", label: "Fille" },
+  { value: "garcon", label: "Garçon" },
+  { value: "unisexe", label: "Unisexe" },
+  { value: "bebe", label: "Bébé" },
+];
+
 /**
  * Barre de filtres pilotée par l'URL (searchParams). Modifier un filtre
  * réinitialise la pagination. Présentation + navigation, pas de logique data.
@@ -41,7 +51,7 @@ export function FilterBar({ categories }: { categories: Category[] }) {
   );
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <Input
         placeholder="Rechercher…"
         defaultValue={params.get("q") ?? ""}
@@ -59,6 +69,17 @@ export function FilterBar({ categories }: { categories: Category[] }) {
         {categories.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
+          </option>
+        ))}
+      </Select>
+      <Select
+        value={params.get("genre") ?? ""}
+        onChange={(e) => update("genre", e.target.value)}
+        aria-label="Genre"
+      >
+        {GENDERS.map((g) => (
+          <option key={g.value} value={g.value}>
+            {g.label}
           </option>
         ))}
       </Select>

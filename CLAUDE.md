@@ -35,7 +35,7 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | **Couche 5 — Enchères** | ✅ création, offres, post auto au feed |
 | **Couche 6 — Transactions & paiements** | ✅ checkout escrow (Stripe Elements), commandes, litiges |
 | **Couche 7 — Avis & notifications** | ✅ avis post-transaction ; notifications (lecture/gestion) |
-| **Couche 8 — Vues marketplace & feed** | ✅ filtres, tri, pagination |
+| **Couche 8 — Vues marketplace & feed** | ✅ filtres (q/catégorie/**genre**/état/tri), pagination ; **boutons 5 familles** (famille active marquée) ; **vue famille = 1 ruban défilant par macro** (`ArticleRail` + « Tout voir » → grille macro, macros vides masquées) ; **ruban « Sélection pour toi »** sur l'accueil catalogue (`getSelectionForYou`, v1 variété récente — perso à venir) |
 | **Couche 9 — Studio IA** | ✅ Workstation hybride (rail A→L · canvas · dock) + registre de skills ; famille G (texte) câblée, autres familles = scaffold (Engine à venir) |
 | **Refonte UI — charte graphique (WS2)** | ✅ tokens clair+sombre, fonts (Italiana/Italianno/Syne), logo officiel, échelle typo exacte, niveaux de maison, feed social, home/marketplace/fiche/vitrine, assets (favicon/OG) |
 

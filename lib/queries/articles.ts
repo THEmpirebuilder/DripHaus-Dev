@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getChildren, type Category } from "@/lib/queries/categories";
 import type { Tables, Enums } from "@/types/database";
 
 export type Article = Tables<"articles">;
@@ -152,4 +153,53 @@ export async function listArticles(filters: ArticleFilters = {}): Promise<Articl
   const rows = data ?? [];
   const hasMore = rows.length > pageSize;
   return { items: hasMore ? rows.slice(0, pageSize) : rows, page, hasMore };
+}
+
+/** Un ruban de catégorie : la macro + un échantillon de ses articles en vente. */
+export type CategoryRail = { category: Category; items: Article[] };
+
+/**
+ * Rubans d'une famille : une entrée par macro-catégorie possédant du stock.
+ * Chaque ruban agrège récursivement les articles des micro-catégories filles.
+ * (Les macros vides sont omises pour ne pas afficher de rubans creux.)
+ */
+export async function getFamilyRails(
+  familyId: string,
+  opts: { perRail?: number; genre?: Enums<"article_gender"> } = {}
+): Promise<CategoryRail[]> {
+  const perRail = opts.perRail ?? 12;
+  const macros = await getChildren(familyId);
+  const rails = await Promise.all(
+    macros.map(async (category) => {
+      const { items } = await listArticles({
+        categoryId: category.id,
+        genre: opts.genre,
+        pageSize: perRail,
+      });
+      return { category, items };
+    })
+  );
+  return rails.filter((r) => r.items.length > 0);
+}
+
+/**
+ * « Sélection pour toi » — v1 sans signal de goût : un échantillon récent et
+ * VARIÉ (une pièce par catégorie d'abord, puis on complète) pour ne pas cloner
+ * la grille principale. La personnalisation réelle (likes / follows / historique
+ * d'achat, puis embeddings famille L) viendra remplacer l'ordre ici.
+ */
+export async function getSelectionForYou(limit = 12): Promise<Article[]> {
+  const { items } = await listArticles({ pageSize: 48, sort: "recent" });
+  const seen = new Set<string>();
+  const primary: Article[] = [];
+  const rest: Article[] = [];
+  for (const a of items) {
+    const key = a.category_id ?? "none";
+    if (seen.has(key)) rest.push(a);
+    else {
+      seen.add(key);
+      primary.push(a);
+    }
+  }
+  return [...primary, ...rest].slice(0, limit);
 }
