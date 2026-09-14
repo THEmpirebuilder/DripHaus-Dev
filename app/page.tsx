@@ -32,7 +32,7 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="border-b border-border py-24 text-center">
         <div className="flex justify-center">
-          <Monogram size={64} />
+          <Monogram size={132} />
         </div>
         <p className="u-label mt-8 text-[11px] text-accent">La mode indépendante suisse</p>
         <h1 className="t-h1 mx-auto mt-4 max-w-3xl text-[clamp(34px,5vw,56px)]">
