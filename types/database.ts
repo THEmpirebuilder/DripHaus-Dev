@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      article_embeddings: {
+        Row: {
+          article_id: string
+          embedding: string
+          model: string
+          updated_at: string
+        }
+        Insert: {
+          article_id: string
+          embedding: string
+          model?: string
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string
+          embedding?: string
+          model?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "article_embeddings_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: true
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       articles: {
         Row: {
           brand: string | null
@@ -546,6 +575,76 @@ export type Database = {
           },
         ]
       }
+      mannequins: {
+        Row: {
+          attributes: Json
+          consent: Json | null
+          created_at: string
+          id: string
+          identity: Json
+          is_system: boolean
+          name: string
+          owner_boutique_id: string | null
+          owner_user_id: string | null
+          preview_asset_id: string | null
+          status: Database["public"]["Enums"]["mannequin_status"]
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          attributes?: Json
+          consent?: Json | null
+          created_at?: string
+          id?: string
+          identity?: Json
+          is_system?: boolean
+          name: string
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          preview_asset_id?: string | null
+          status?: Database["public"]["Enums"]["mannequin_status"]
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          attributes?: Json
+          consent?: Json | null
+          created_at?: string
+          id?: string
+          identity?: Json
+          is_system?: boolean
+          name?: string
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          preview_asset_id?: string | null
+          status?: Database["public"]["Enums"]["mannequin_status"]
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mannequins_owner_boutique_id_fkey"
+            columns: ["owner_boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mannequins_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mannequins_preview_asset_id_fkey"
+            columns: ["preview_asset_id"]
+            isOneToOne: false
+            referencedRelation: "studio_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -773,6 +872,319 @@ export type Database = {
           },
         ]
       }
+      studio_assets: {
+        Row: {
+          article_id: string | null
+          bucket: string
+          contract: Json
+          created_at: string
+          duration_ms: number | null
+          height: number | null
+          id: string
+          is_final: boolean
+          job_id: string | null
+          kind: Database["public"]["Enums"]["studio_asset_kind"]
+          mime: string | null
+          owner_boutique_id: string | null
+          owner_user_id: string | null
+          parent_asset_id: string | null
+          path: string
+          version: number
+          width: number | null
+        }
+        Insert: {
+          article_id?: string | null
+          bucket: string
+          contract?: Json
+          created_at?: string
+          duration_ms?: number | null
+          height?: number | null
+          id?: string
+          is_final?: boolean
+          job_id?: string | null
+          kind: Database["public"]["Enums"]["studio_asset_kind"]
+          mime?: string | null
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          parent_asset_id?: string | null
+          path: string
+          version?: number
+          width?: number | null
+        }
+        Update: {
+          article_id?: string | null
+          bucket?: string
+          contract?: Json
+          created_at?: string
+          duration_ms?: number | null
+          height?: number | null
+          id?: string
+          is_final?: boolean
+          job_id?: string | null
+          kind?: Database["public"]["Enums"]["studio_asset_kind"]
+          mime?: string | null
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          parent_asset_id?: string | null
+          path?: string
+          version?: number
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_assets_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_assets_job_fk"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "studio_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_assets_owner_boutique_id_fkey"
+            columns: ["owner_boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_assets_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_assets_parent_asset_id_fkey"
+            columns: ["parent_asset_id"]
+            isOneToOne: false
+            referencedRelation: "studio_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_credit_ledger: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          job_id: string | null
+          note: string | null
+          owner_boutique_id: string | null
+          owner_user_id: string | null
+          reason: Database["public"]["Enums"]["credit_reason"]
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          job_id?: string | null
+          note?: string | null
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          reason: Database["public"]["Enums"]["credit_reason"]
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          job_id?: string | null
+          note?: string | null
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          reason?: Database["public"]["Enums"]["credit_reason"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_credit_job_fk"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "studio_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_credit_ledger_owner_boutique_id_fkey"
+            columns: ["owner_boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_credit_ledger_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          created_by: string
+          credits_charged: boolean
+          credits_cost: number
+          engine: string | null
+          error: string | null
+          family: string
+          finished_at: string | null
+          id: string
+          input_asset_ids: string[]
+          is_draft: boolean
+          max_attempts: number
+          output_asset_id: string | null
+          owner_boutique_id: string | null
+          owner_user_id: string | null
+          params: Json
+          skill: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["studio_job_status"]
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          created_by: string
+          credits_charged?: boolean
+          credits_cost?: number
+          engine?: string | null
+          error?: string | null
+          family: string
+          finished_at?: string | null
+          id?: string
+          input_asset_ids?: string[]
+          is_draft?: boolean
+          max_attempts?: number
+          output_asset_id?: string | null
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          params?: Json
+          skill: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["studio_job_status"]
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          created_by?: string
+          credits_charged?: boolean
+          credits_cost?: number
+          engine?: string | null
+          error?: string | null
+          family?: string
+          finished_at?: string | null
+          id?: string
+          input_asset_ids?: string[]
+          is_draft?: boolean
+          max_attempts?: number
+          output_asset_id?: string | null
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          params?: Json
+          skill?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["studio_job_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_jobs_output_fk"
+            columns: ["output_asset_id"]
+            isOneToOne: false
+            referencedRelation: "studio_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_jobs_owner_boutique_id_fkey"
+            columns: ["owner_boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_jobs_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_presets: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          is_system: boolean
+          kind: Database["public"]["Enums"]["studio_preset_kind"]
+          name: string
+          owner_boutique_id: string | null
+          owner_user_id: string | null
+          preview_asset_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          kind: Database["public"]["Enums"]["studio_preset_kind"]
+          name: string
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          preview_asset_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          kind?: Database["public"]["Enums"]["studio_preset_kind"]
+          name?: string
+          owner_boutique_id?: string | null
+          owner_user_id?: string | null
+          preview_asset_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_presets_owner_boutique_id_fkey"
+            columns: ["owner_boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_presets_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_presets_preview_asset_id_fkey"
+            columns: ["preview_asset_id"]
+            isOneToOne: false
+            referencedRelation: "studio_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -930,6 +1342,12 @@ export type Database = {
       boutique_member_role: "owner" | "manager"
       boutique_status: "active" | "suspended" | "pending"
       comment_status: "active" | "removed"
+      credit_reason:
+        | "grant_free"
+        | "purchase"
+        | "consume"
+        | "refund"
+        | "adjustment"
       dispute_reason: "not_received" | "not_as_described" | "damaged" | "other"
       dispute_status:
         | "open"
@@ -937,6 +1355,7 @@ export type Database = {
         | "resolved_buyer"
         | "resolved_seller"
         | "closed"
+      mannequin_status: "draft" | "locked" | "archived"
       notification_type:
         | "new_follower"
         | "new_like"
@@ -951,6 +1370,24 @@ export type Database = {
       post_status: "published" | "draft" | "removed"
       post_type: "organic" | "article_share" | "auction" | "promo"
       reference_type: "post" | "article" | "auction" | "transaction" | "dispute"
+      studio_asset_kind:
+        | "input"
+        | "mannequin"
+        | "tryon"
+        | "scene"
+        | "packshot"
+        | "video"
+        | "cover"
+        | "theme"
+        | "text"
+        | "other"
+      studio_job_status:
+        | "queued"
+        | "running"
+        | "succeeded"
+        | "failed"
+        | "canceled"
+      studio_preset_kind: "scene_decor" | "style_da" | "brand_theme" | "pose"
       subscription_tier: "free" | "pro" | "premium"
       user_role: "particulier" | "createur" | "boutique"
       user_status: "active" | "pending_kyc" | "suspended"
@@ -1088,6 +1525,13 @@ export const Constants = {
       boutique_member_role: ["owner", "manager"],
       boutique_status: ["active", "suspended", "pending"],
       comment_status: ["active", "removed"],
+      credit_reason: [
+        "grant_free",
+        "purchase",
+        "consume",
+        "refund",
+        "adjustment",
+      ],
       dispute_reason: ["not_received", "not_as_described", "damaged", "other"],
       dispute_status: [
         "open",
@@ -1096,6 +1540,7 @@ export const Constants = {
         "resolved_seller",
         "closed",
       ],
+      mannequin_status: ["draft", "locked", "archived"],
       notification_type: [
         "new_follower",
         "new_like",
@@ -1111,6 +1556,26 @@ export const Constants = {
       post_status: ["published", "draft", "removed"],
       post_type: ["organic", "article_share", "auction", "promo"],
       reference_type: ["post", "article", "auction", "transaction", "dispute"],
+      studio_asset_kind: [
+        "input",
+        "mannequin",
+        "tryon",
+        "scene",
+        "packshot",
+        "video",
+        "cover",
+        "theme",
+        "text",
+        "other",
+      ],
+      studio_job_status: [
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "canceled",
+      ],
+      studio_preset_kind: ["scene_decor", "style_da", "brand_theme", "pose"],
       subscription_tier: ["free", "pro", "premium"],
       user_role: ["particulier", "createur", "boutique"],
       user_status: ["active", "pending_kyc", "suspended"],

@@ -1,18 +1,17 @@
 import { requireUser } from "@/lib/auth/session";
-import { StudioTool } from "@/components/studio/studio-tool";
+import { getMatchingSuggestions } from "@/lib/queries/studio";
+import { StudioWorkstation } from "@/components/studio/studio-workstation";
 
 export const metadata = { title: "Studio IA" };
 
+/**
+ * Page Studio IA — poste de travail hybride (rail A→L · canvas · dock).
+ * Server Component mince : lit la session (le rôle pilote le défaut de persona)
+ * et un échantillon réel du catalogue pour le matching (famille L), puis délègue.
+ */
 export default async function StudioPage() {
-  await requireUser();
+  const user = await requireUser();
+  const matches = await getMatchingSuggestions(3);
 
-  return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
-      <h1 className="text-2xl font-semibold">Studio IA</h1>
-      <p className="mt-1 mb-8 text-sm text-muted">
-        Rédige tes descriptions, légendes et balises SEO en un clic, propulsé par l&apos;IA.
-      </p>
-      <StudioTool />
-    </main>
-  );
+  return <StudioWorkstation persona={user.account.role} matches={matches} />;
 }

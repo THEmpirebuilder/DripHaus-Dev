@@ -36,10 +36,10 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | **Couche 6 — Transactions & paiements** | ✅ checkout escrow (Stripe Elements), commandes, litiges |
 | **Couche 7 — Avis & notifications** | ✅ avis post-transaction ; notifications (lecture/gestion) |
 | **Couche 8 — Vues marketplace & feed** | ✅ filtres, tri, pagination |
-| **Couche 9 — Studio IA** | ✅ caption / SEO / description via AI Gateway (`ai`) |
+| **Couche 9 — Studio IA** | ✅ Workstation hybride (rail A→L · canvas · dock) + registre de skills ; famille G (texte) câblée, autres familles = scaffold (Engine à venir) |
 | **Refonte UI — charte graphique (WS2)** | ✅ tokens clair+sombre, fonts (Italiana/Italianno/Syne), logo officiel, échelle typo exacte, niveaux de maison, feed social, home/marketplace/fiche/vitrine, assets (favicon/OG) |
 
-### Migrations Supabase — 001→008 + **010** appliquées (projet `dhinegywctxmhepgempp`) — 009 réservée (non appliquée)
+### Migrations Supabase — 001→010 **toutes appliquées** (projet `dhinegywctxmhepgempp`)
 - `005_storage_media.sql` : bucket `media` + policies Storage.
 - `006_notifications_triggers.sql` : triggers `new_follower`/`new_like`/`new_comment`/`new_bid`.
 - `007_close_auctions_cron.sql` : clôture enchères échues + `winner_user_id` + notifs, via `pg_cron`.
@@ -60,19 +60,37 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 > Auth — seul WARN advisor restant) ; rate-limiting/anti-bot ; CSP ; RLS perf `(select auth.uid())`
 > + nettoyage index (à replacer dans une migration ultérieure).
 
-### Studio IA — socle stockage & données (migration `009`, **NON APPLIQUÉE**)
-Conçu 2026-09-14. Le Studio produisait des assets (mannequins, jobs, brouillons/finaux, presets, contrat
-JSON, crédits, embeddings) **sans aucun foyer** en base. `supabase/migrations/009_studio_schema.sql`
-(versionnée, à jouer **après validation** ; rollback commenté) pose : `studio_credit_ledger` (grand-livre
+### Studio IA — socle stockage & données (migration `009`, **APPLIQUÉE 2026-09-14**)
+`009_studio_schema` + `009_studio_storage` appliquées sur `dhinegywctxmhepgempp`, `types/database.ts`
+régénéré, advisors sécurité **propres** (RLS active sur les 6 tables, aucune nouvelle alerte). Le Studio
+produisait des assets **sans aucun foyer** en base → désormais : `studio_credit_ledger` (grand-livre
 pondéré append-only), `studio_jobs` (queue app↔Engine), `studio_assets` (+ **contrat d'assets JSON**,
 lineage), `mannequins` (identité verrouillée + versioning), `studio_presets` (décors/DA/thèmes), et
-`article_embeddings` (**pgvector 768d** Marqo-FashionSigLIP → matching famille L, le moat). RLS calquée sur
-`transactions` : l'app **enfile** un job (`status=queued`) et **lit** ; l'**Engine** (service_role) exécute,
-écrit assets, débite crédits. **Buckets** privés `studio-in`/`studio-draft` (purge 7j)/`studio-out` +
-promotion vers `media` = SQL commenté en fin de 009 (à jouer comme 005). Doc complet :
-`../cerveau/STUDIO_IA_STOCKAGE_DONNEES.md`. **Registre de skills = code** (`lib/studio/skills.ts`, à créer),
-pas base. Après application : `npm run types:gen`. Maquette UI hybride (Artifact) validée en design.
-⚠️ `009` active l'extension `vector` — vérifier qu'elle est autorisée sur le projet.
+`article_embeddings` (**pgvector 768d** `extensions.vector`, index HNSW → matching famille L, le moat). RLS
+calquée sur `transactions` (helper `private.owns_studio_row`) : l'app **enfile** un job (`status=queued`) et
+**lit** ; l'**Engine** (service_role, à construire) exécute, écrit assets, débite crédits. **Buckets** privés
+`studio-in`/`studio-draft` (purge cron 7j)/`studio-out` créés ; promotion vers `media` public à la
+publication. Doc complet : `../cerveau/STUDIO_IA_STOCKAGE_DONNEES.md`.
+⚠️ Le fichier `supabase/migrations/009_studio_schema.sql` garde son `begin/commit` (usage psql manuel) ;
+l'apply MCP l'a joué sans ces lignes. Le volet Storage du fichier (commenté) a été appliqué séparément.
+
+### Studio IA — page (workstation), 2026-09-14
+Page réelle `app/(studio)/studio/page.tsx` = server mince : `requireUser()` → le **rôle** pilote le défaut
+de persona (`particulier`=auto-pilote guidé, `createur`/`boutique`=atelier complet) + `getMatchingSuggestions()`
+(vraies pièces en vente pour la famille L). Rend `StudioWorkstation` (client) — 3 zones :
+- **Registre de skills** `lib/studio/skills.ts` (SOURCE DE VÉRITÉ A→L : type Agent/Skill/Asset, famille,
+  poids crédits, provider/engine par défaut, statut live/planned). `studio_jobs.skill` référencera une `key`.
+- **Rail** `studio-rail.tsx` (pipeline A→L taggé, auto-pilote en tête si guidé) · **Canvas** `studio-canvas.tsx`
+  (aperçu + lignée de versions + matching réel) · **Dock** `studio-dock.tsx` (Assistant / Réglages qui
+  surfacent le registre / Contrat JSON / **Texte = famille G LIVE** via `text-studio.tsx`).
+- Assets de marque **officiels** utilisés (`Monogram`, `HouseDiamond`, tokens, classes `t-h*`/`u-label`) —
+  aucun SVG réinventé. `skill-tag.tsx` = pastille Agent/Skill/Asset (or/accent/écru).
+- **Honnêteté produit** : seule la famille G génère (déjà câblée) ; les autres = scaffold avec « Bientôt »
+  et coût crédits affiché ; jauge crédits marquée « démo » (ledger lu plus tard, après WB4).
+- typecheck + build OK (`/studio` 11.8 kB, dynamique). `lib/queries/studio.ts` : `getMatchingSuggestions`
+  (le solde crédits `studio_credit_ledger` reste à câbler — noté TODO).
+> **Reste studio** : Engine service_role (worker queue, étape 1 tout-API AI Gateway/Modal) ; seed
+> presets/mannequins système ; lire le solde crédits réel ; brancher WB4 (grant_free/purchase) sur le ledger.
 
 ### Refonte UI (WS2) — charte graphique, appliquée 2026-09-14
 Charte fournie par l'associé dans `../Dossier Marque DripHaus/` (hors repo). Appliquée **sans toucher
