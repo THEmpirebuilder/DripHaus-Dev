@@ -24,11 +24,11 @@ export function ReviewForm({ transactionId }: { transactionId: string }) {
       <div>
         <Label htmlFor="rating">Note</Label>
         <Select id="rating" name="rating" defaultValue="5">
-          <option value="5">★★★★★ — Excellent</option>
-          <option value="4">★★★★ — Très bien</option>
-          <option value="3">★★★ — Correct</option>
-          <option value="2">★★ — Décevant</option>
-          <option value="1">★ — Mauvais</option>
+          <option value="5">5 sur 5 — Excellent</option>
+          <option value="4">4 sur 5 — Très bien</option>
+          <option value="3">3 sur 5 — Correct</option>
+          <option value="2">2 sur 5 — Décevant</option>
+          <option value="1">1 sur 5 — Mauvais</option>
         </Select>
       </div>
       <div>

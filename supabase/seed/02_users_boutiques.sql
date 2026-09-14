@@ -111,3 +111,7 @@ insert into public.boutique_members (user_id, boutique_id, role)
 select public.__demo_uid(b.owner_email), bo.id, 'owner'
 from _bdefs b join public.boutiques bo on bo.handle = b.handle
 on conflict (user_id, boutique_id) do nothing;
+
+-- Assainissement visuel : retirer les logos DiceBear (pâles, peu lisibles dans les
+-- avatars/anneaux) → laisse le repli de marque (initiales Italiana) s'afficher. Idempotent.
+update public.boutiques set logo_url = null where logo_url ilike '%dicebear%';

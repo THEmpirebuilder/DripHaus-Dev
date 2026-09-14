@@ -19,22 +19,31 @@ export function BoutiqueHeader({
   const status = STATUS[boutique.status];
 
   return (
-    <div className="flex items-start gap-4">
-      <Avatar src={boutique.logo_url} name={boutique.name} size={72} className="rounded-xl" />
+    <div className="flex items-start gap-5">
+      <Avatar src={boutique.logo_url} name={boutique.name} size={80} className="rounded-none border-accent/40" />
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <h1 className="truncate text-2xl font-semibold">{boutique.name}</h1>
-          {boutique.kyc_verified && <Badge tone="success">Vérifiée</Badge>}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="t-h2 truncate">{boutique.name}</h1>
+          {boutique.kyc_verified && (
+            <Badge tone="verified">
+              <span className="mr-1 inline-block h-2 w-2 rotate-45 border border-silver" aria-hidden />
+              Vérifiée
+            </Badge>
+          )}
           {showStatus && status && <Badge tone={status.tone}>{status.label}</Badge>}
         </div>
-        <p className="text-sm text-muted">@{boutique.handle}</p>
-        {boutique.description && <p className="mt-3 whitespace-pre-line text-sm">{boutique.description}</p>}
+        <p className="mt-1.5 text-sm text-muted">@{boutique.handle}</p>
+        {boutique.description && (
+          <p className="mt-3 max-w-2xl whitespace-pre-line text-sm leading-relaxed text-foreground/90">
+            {boutique.description}
+          </p>
+        )}
         {boutique.website_url && (
           <a
             href={boutique.website_url}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="mt-2 inline-block text-sm underline underline-offset-4"
+            className="mt-2 inline-block text-sm text-accent underline underline-offset-4"
           >
             {boutique.website_url}
           </a>

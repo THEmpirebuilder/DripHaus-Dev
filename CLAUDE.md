@@ -37,6 +37,7 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | **Couche 7 — Avis & notifications** | ✅ avis post-transaction ; notifications (lecture/gestion) |
 | **Couche 8 — Vues marketplace & feed** | ✅ filtres, tri, pagination |
 | **Couche 9 — Studio IA** | ✅ caption / SEO / description via AI Gateway (`ai`) |
+| **Refonte UI — charte graphique (WS2)** | ✅ tokens clair+sombre, fonts (Italiana/Italianno/Syne), logo officiel, échelle typo exacte, niveaux de maison, feed social, home/marketplace/fiche/vitrine, assets (favicon/OG) |
 
 ### Migrations Supabase — 001→008 **toutes appliquées** (projet `dhinegywctxmhepgempp`)
 - `005_storage_media.sql` : bucket `media` + policies Storage.
@@ -52,6 +53,33 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 > **À faire (WB1, non fait)** : activer la protection mots de passe compromis (toggle dashboard Supabase
 > Auth — seul WARN advisor restant) ; rate-limiting/anti-bot ; CSP ; migration `009` RLS perf
 > `(select auth.uid())` + nettoyage index.
+
+### Refonte UI (WS2) — charte graphique, appliquée 2026-09-14
+Charte fournie par l'associé dans `../Dossier Marque DripHaus/` (hors repo). Appliquée **sans toucher
+la logique** (tokens + primitives + composants de présentation, cf. §4).
+- **Tokens** : `app/globals.css` — 12 rôles clair+sombre (valeurs charte), échelle de radius encodée
+  (0 cartes/images · 2px champs/boutons · pilule badges), ombres froides, métaux (or/bronze/argent) + écru.
+  Deux ors : `--gold #C9A24A` décoratif (gros éléments) vs token `--accent #8E6335` (texte/UI). Argent =
+  authentification uniquement. Noir proscrit → encre `#14130F`.
+- **Typo** : `next/font` (Italiana titres/wordmark, Italianno monogramme, Syne UI). Échelle exacte en
+  classes `.t-h1/.t-h2/.t-h3/.t-h4/.t-price` (globals) — valeurs charte p.04.
+- **Marque** : `components/brand/monogram.tsx` (logo/monogramme = transcription fidèle du SVG fourni),
+  `lib/utils/house-tier.ts` (niveaux de maison or/bronze/argent : `houseTier`, `TIER_LABEL`, `TIER_THEME`) +
+  `components/brand/house-diamond.tsx`. Assets : `app/icon.svg`, `apple-icon.png`, `opengraph-image.png`,
+  `public/brand/`.
+- **Feed social** (`components/social/post-card.tsx`, `story-rail.tsx`, `feed-rail.tsx`) : média-first,
+  héro shoppable, stories, rail à-suivre/tendances, temps relatif (`formatRelative`).
+- **Motion** : `app/template.tsx` (fondu de navigation, respecte prefers-reduced-motion).
+
+> **Suites (prochaines sessions)** :
+> 1. **Catégories macro/micro** (session SQL Supabase) : définir proprement la taxonomie. NB code déjà en
+>    place — `listArticles` étend un parent à ses sous-catégories (`lib/queries/articles.ts`), donc filtrer
+>    une famille marche ; reste à structurer/compléter les rattachements en base.
+> 2. **Nettoyer la base LIVE** (emojis des posts + logos DiceBear) : UPDATE idempotent déjà dans
+>    `supabase/seed/02` & `04`, mais l'exécution directe a été bloquée par le garde-fou — rejouer via
+>    l'éditeur SQL Supabase ou un re-seed.
+> 3. **Composants 21st.dev** : connecteur `magic` à réauthentifier (clé API), puis adapter les composants
+>    choisis à la charte (tokens + primitives) avant intégration.
 
 ### Câblé côté serveur
 - **Webhook Stripe** (`app/api/webhooks/stripe/route.ts`) : `held`/`payout` + marque l'article `sold` à l'encaissement, et émet les notifs `sale`/`payout` (service_role). Reste à déclencher `releaseSellerPayout` après confirmation de livraison (résout alors le compte vendeur).

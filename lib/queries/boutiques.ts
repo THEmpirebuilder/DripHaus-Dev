@@ -74,6 +74,19 @@ export async function getBoutiquesByIds(ids: string[]): Promise<Map<string, Bout
   return new Map((data ?? []).map((b) => [b.id, b]));
 }
 
+/** Boutiques actives à suggérer (rail « à suivre » / « nouveautés »), les plus récentes d'abord. */
+export async function getSuggestedBoutiques(limit = 6): Promise<BoutiquePublic[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("boutiques")
+    .select(BOUTIQUE_PUBLIC_COLUMNS)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
+
 /** Boutiques dont l'utilisateur est membre (owner ou manager). */
 export async function getMyBoutiques(userId: string): Promise<Array<BoutiquePublic & { role: Tables<"boutique_members">["role"] }>> {
   const supabase = await createClient();
