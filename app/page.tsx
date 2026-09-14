@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Monogram } from "@/components/brand/monogram";
+import { ArticleGrid } from "@/components/article/article-grid";
+import { BoutiqueCard } from "@/components/boutique/boutique-card";
+import { listArticles } from "@/lib/queries/articles";
+import { getSuggestedBoutiques } from "@/lib/queries/boutiques";
 
 const modules = [
   { href: "/marketplace", label: "Marketplace", desc: "Les pièces en vente, authentifiées pièce par pièce." },
@@ -9,7 +13,20 @@ const modules = [
   { href: "/studio", label: "Studio IA", desc: "Créer visuels et descriptions produit." },
 ];
 
-export default function HomePage() {
+function ArrowRight() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 transition-transform duration-200 group-hover:translate-x-1" aria-hidden>
+      <line x1="5" y1="12" x2="19" y2="12" /><polyline points="13 6 19 12 13 18" />
+    </svg>
+  );
+}
+
+export default async function HomePage() {
+  const [{ items: selection }, boutiques] = await Promise.all([
+    listArticles({ pageSize: 8 }),
+    getSuggestedBoutiques(3),
+  ]);
+
   return (
     <main className="mx-auto max-w-6xl px-6">
       {/* Hero */}
@@ -35,8 +52,39 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Sélection du moment */}
+      {selection.length > 0 && (
+        <section className="py-16">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <div className="u-label mb-1.5 text-[11px] text-accent">Sélection du moment</div>
+              <h2 className="font-serif text-3xl leading-none">Pièces à découvrir</h2>
+            </div>
+            <Link href="/marketplace" className="group inline-flex items-center gap-2 text-sm text-accent hover:text-gold-shadow">
+              Tout voir <ArrowRight />
+            </Link>
+          </div>
+          <ArticleGrid articles={selection} emptyLabel="Rien pour le moment." />
+        </section>
+      )}
+
+      {/* Boutiques à la une */}
+      {boutiques.length > 0 && (
+        <section className="border-t border-border py-16">
+          <div className="mb-8">
+            <div className="u-label mb-1.5 text-[11px] text-accent">Maisons partenaires</div>
+            <h2 className="font-serif text-3xl leading-none">Boutiques à la une</h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {boutiques.map((b) => (
+              <BoutiqueCard key={b.id} boutique={b} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Modules */}
-      <section className="grid gap-px bg-border py-px sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-px border-t border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((m) => (
           <Link
             key={m.href}
@@ -46,21 +94,7 @@ export default function HomePage() {
             <span className="u-label text-[11px] text-accent">{m.label}</span>
             <span className="mt-6 flex items-end justify-between">
               <span className="max-w-[16rem] text-sm leading-relaxed text-muted">{m.desc}</span>
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="shrink-0 text-foreground transition-transform group-hover:translate-x-1"
-                aria-hidden
-              >
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="13 6 19 12 13 18" />
-              </svg>
+              <span className="text-foreground"><ArrowRight /></span>
             </span>
           </Link>
         ))}

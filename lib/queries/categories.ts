@@ -13,3 +13,15 @@ export async function getCategories(): Promise<Category[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+/** Familles de tête (sans parent) — pour les tuiles de navigation visuelle. */
+export async function getTopCategories(): Promise<Category[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("categories")
+    .select("*")
+    .is("parent_id", null)
+    .order("name", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}

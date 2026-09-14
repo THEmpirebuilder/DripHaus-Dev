@@ -1,7 +1,8 @@
 import { listArticles, type ArticleSort } from "@/lib/queries/articles";
-import { getCategories } from "@/lib/queries/categories";
+import { getCategories, getTopCategories } from "@/lib/queries/categories";
 import { Constants, type Enums } from "@/types/database";
 import { FilterBar } from "@/components/marketplace/filter-bar";
+import { CategoryTiles } from "@/components/marketplace/category-tiles";
 import { Pagination } from "@/components/marketplace/pagination";
 import { ArticleGrid } from "@/components/article/article-grid";
 
@@ -36,7 +37,7 @@ export default async function MarketplacePage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const categories = await getCategories();
+  const [categories, topCategories] = await Promise.all([getCategories(), getTopCategories()]);
 
   const page = Math.max(0, Number(sp.page ?? 0) || 0);
   const sort = SORTS.includes(sp.sort as ArticleSort) ? (sp.sort as ArticleSort) : "recent";
@@ -54,7 +55,16 @@ export default async function MarketplacePage({
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
-      <h1 className="mb-6 text-2xl font-semibold">Marketplace</h1>
+      <div className="mb-8">
+        <div className="u-label mb-1.5 text-[11px] text-accent">Le catalogue</div>
+        <h1 className="font-serif text-4xl leading-none">Marketplace</h1>
+      </div>
+
+      {!sp.category && !sp.q && topCategories.length > 0 && (
+        <div className="mb-8">
+          <CategoryTiles categories={topCategories} />
+        </div>
+      )}
 
       <FilterBar categories={categories} />
 
