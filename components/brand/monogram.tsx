@@ -44,7 +44,7 @@ const DIAMOND = "M75 8 C 92 30, 118 53, 141 74 C 119 95, 95 119, 74 142 C 55 120
 
 /** Cœur graphique du losange (partagé). `grad` = id de dégradé unique par usage.
  *  `store` : réintègre la mention « STORE » du logo fourni (retirée par défaut). */
-function DiamondArt({ grad, veil = true, store = false }: { grad: string; veil?: boolean; store?: boolean }) {
+function DiamondArt({ grad, veil = true, store = true }: { grad: string; veil?: boolean; store?: boolean }) {
   return (
     <>
       <defs>
