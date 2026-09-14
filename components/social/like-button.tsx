@@ -35,12 +35,23 @@ export function LikeButton({
       onClick={onClick}
       disabled={pending}
       className={cn(
-        "inline-flex items-center gap-1.5 text-sm transition",
-        liked ? "text-destructive" : "text-muted hover:text-foreground"
+        "inline-flex items-center gap-2 rounded-full px-2 py-1.5 text-sm transition-colors",
+        liked ? "text-destructive" : "text-muted hover:bg-surface-elevated hover:text-foreground"
       )}
       aria-pressed={liked}
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <svg
+        width="19"
+        height="19"
+        viewBox="0 0 24 24"
+        fill={liked ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+        className={cn("transition-transform duration-200", liked ? "scale-110" : "scale-100")}
+      >
         <path d="M12 21C5 16 3 12 3 8.5A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 9 2.5C21 12 19 16 12 21z" />
       </svg>
       <span className="tabular-nums">{count}</span>
