@@ -35,7 +35,7 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | **Couche 5 — Enchères** | ✅ création, offres, post auto au feed |
 | **Couche 6 — Transactions & paiements** | ✅ checkout escrow (Stripe Elements), commandes, litiges |
 | **Couche 7 — Avis & notifications** | ✅ avis post-transaction ; notifications (lecture/gestion) |
-| **Couche 8 — Vues marketplace & feed** | ✅ filtres (q/catégorie/**genre**/état/tri), pagination ; **boutons 5 familles** (famille active marquée) ; **vue famille = 1 ruban défilant par macro** (`ArticleRail` + « Tout voir » → grille macro, macros vides masquées) ; **ruban « Sélection pour toi »** sur l'accueil catalogue (`getSelectionForYou`, v1 variété récente — perso à venir) |
+| **Couche 8 — Vues marketplace & feed** | ✅ filtres (q / catégorie **en cascade** Famille→Macro→Micro / **genre** / état / tri), pagination ; **boutons 5 familles** (famille active marquée) ; **vue famille = 1 ruban défilant par macro** (`ArticleRail` + « Tout voir » → grille macro, macros vides masquées) ; **ruban « Sélection pour toi »** sur l'accueil catalogue (`getSelectionForYou`, v1 **tirage aléatoire** — perso à venir) |
 | **Couche 9 — Studio IA** | ✅ Workstation hybride (rail A→L · canvas · dock) + registre de skills ; famille G (texte) câblée, autres familles = scaffold (Engine à venir) |
 | **Refonte UI — charte graphique (WS2)** | ✅ tokens clair+sombre, fonts (Italiana/Italianno/Syne), logo officiel, échelle typo exacte, niveaux de maison, feed social, home/marketplace/fiche/vitrine, assets (favicon/OG) |
 
@@ -83,14 +83,24 @@ de persona (`particulier`=auto-pilote guidé, `createur`/`boutique`=atelier comp
 - **Rail** `studio-rail.tsx` (pipeline A→L taggé, auto-pilote en tête si guidé) · **Canvas** `studio-canvas.tsx`
   (aperçu + lignée de versions + matching réel) · **Dock** `studio-dock.tsx` (Assistant / Réglages qui
   surfacent le registre / Contrat JSON / **Texte = famille G LIVE** via `text-studio.tsx`).
+- **Ingestion (famille A) = point d'entrée réel** `studio-import.tsx` : la page **démarre sur A**. Trois
+  sources — **Importer** (input file multiple), **Prendre une photo** (`capture=environment` → appareil
+  photo sur mobile), **Depuis mes pièces** (réutilise les images DripHaus de l'utilisateur **+ de ses
+  boutiques**, via `getStudioSources(userId)`). Sélection + aperçus fonctionnels (object-URLs révoqués au
+  démontage) ; « Lancer la préparation » reste **gated « Bientôt »** (Engine). `canvas` route A → `StudioImport`.
 - Assets de marque **officiels** utilisés (`Monogram`, `HouseDiamond`, tokens, classes `t-h*`/`u-label`) —
   aucun SVG réinventé. `skill-tag.tsx` = pastille Agent/Skill/Asset (or/accent/écru).
 - **Honnêteté produit** : seule la famille G génère (déjà câblée) ; les autres = scaffold avec « Bientôt »
   et coût crédits affiché ; jauge crédits marquée « démo » (ledger lu plus tard, après WB4).
-- typecheck + build OK (`/studio` 11.8 kB, dynamique). `lib/queries/studio.ts` : `getMatchingSuggestions`
+- typecheck + build OK (`/studio` 13.6 kB, dynamique). **Mergé sur `main` + en prod** (commits `cd1604d`
+  workstation/009, `febc5b3` ingestion). `lib/queries/studio.ts` : `getMatchingSuggestions` + `getStudioSources`
   (le solde crédits `studio_credit_ledger` reste à câbler — noté TODO).
-> **Reste studio** : Engine service_role (worker queue, étape 1 tout-API AI Gateway/Modal) ; seed
-> presets/mannequins système ; lire le solde crédits réel ; brancher WB4 (grant_free/purchase) sur le ledger.
+> **PROCHAINE SESSION = STUDIO ENGINE** (décidé 2026-09-14). Service `service_role` qui consomme la queue
+> `studio_jobs` → appelle les modèles (étape 1 tout-API via **Vercel AI Gateway** / Modal) → écrit
+> `studio_assets` (+ contrat JSON) → débite `studio_credit_ledger`. C'est lui qui rendra vivantes les
+> familles A→F/H/I/L (le « Lancer la préparation » de l'ingestion, l'essayage, la scène, la vidéo, le
+> matching). En parallèle : seed presets/mannequins système ; lire le solde crédits réel ; brancher WB4
+> (grant_free/purchase) sur le ledger ; scoper l'input storage (upload vers bucket `studio-in`).
 
 ### Refonte UI (WS2) — charte graphique, appliquée 2026-09-14
 Charte fournie par l'associé dans `../Dossier Marque DripHaus/` (hors repo). Appliquée **sans toucher
