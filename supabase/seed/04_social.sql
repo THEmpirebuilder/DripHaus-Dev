@@ -99,3 +99,9 @@ insert into public.posts (id, author_boutique_id, content, type, auction_id, art
    'Enchère en cours 🔨 Trench-coat Burberry vintage, mise à prix 40 CHF. Les offres montent, à vous de jouer !',
    'auction', public.__demo_uid('auction:5970834'), public.__demo_uid('article:5970834'), 'published', now() - interval '2 days')
 on conflict (id) do update set content=excluded.content, auction_id=excluded.auction_id;
+
+-- Assainissement charte : l'interface est éditoriale, sans emoji. On retire les emojis
+-- du contenu des posts de démo (et on recolle les espaces). Idempotent.
+update public.posts
+set content = btrim(regexp_replace(regexp_replace(content, '[🌿♻🔥🔨✨👖😍⭐️🎯🙌💛🧵🪡]', '', 'g'), '\s{2,}', ' ', 'g'))
+where content ~ '[🌿♻🔥🔨✨👖😍⭐️🎯🙌💛🧵🪡]';
