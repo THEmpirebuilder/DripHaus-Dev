@@ -35,7 +35,7 @@ export default async function HomePage() {
           <Monogram size={64} />
         </div>
         <p className="u-label mt-8 text-[11px] text-accent">La mode indépendante suisse</p>
-        <h1 className="font-serif mx-auto mt-4 max-w-3xl text-6xl leading-[1.05] tracking-[0.02em]">
+        <h1 className="t-h1 mx-auto mt-4 max-w-3xl text-[clamp(34px,5vw,56px)]">
           Seconde main, vintage et créateurs — authentifiés pièce par pièce.
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted">
@@ -58,7 +58,7 @@ export default async function HomePage() {
           <div className="mb-8 flex items-end justify-between">
             <div>
               <div className="u-label mb-1.5 text-[11px] text-accent">Sélection du moment</div>
-              <h2 className="font-serif text-3xl leading-none">Pièces à découvrir</h2>
+              <h2 className="t-h2">Pièces à découvrir</h2>
             </div>
             <Link href="/marketplace" className="group inline-flex items-center gap-2 text-sm text-accent hover:text-gold-shadow">
               Tout voir <ArrowRight />
@@ -73,7 +73,7 @@ export default async function HomePage() {
         <section className="border-t border-border py-16">
           <div className="mb-8">
             <div className="u-label mb-1.5 text-[11px] text-accent">Maisons partenaires</div>
-            <h2 className="font-serif text-3xl leading-none">Boutiques à la une</h2>
+            <h2 className="t-h2">Boutiques à la une</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {boutiques.map((b) => (

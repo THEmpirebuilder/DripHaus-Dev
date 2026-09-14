@@ -57,7 +57,7 @@ export default async function MarketplacePage({
     <main className="mx-auto max-w-5xl px-6 py-12">
       <div className="mb-8">
         <div className="u-label mb-1.5 text-[11px] text-accent">Le catalogue</div>
-        <h1 className="font-serif text-4xl leading-none">Marketplace</h1>
+        <h1 className="t-h1">Marketplace</h1>
       </div>
 
       {!sp.category && !sp.q && topCategories.length > 0 && (

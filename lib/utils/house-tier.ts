@@ -15,6 +15,19 @@ export const TIER_LABEL: Record<HouseTier, string> = {
   argent: "Sélection",
 };
 
+/**
+ * Traitement différentiel par registre (charte p.07). Le niveau se lit au métal
+ * du losange et à la teinte de la fiche — jamais par un mot dévalorisant.
+ *   or     → fiche sur blanc, emblème doré
+ *   bronze → fiche sur écru, emblème bronze
+ *   argent → fiche sur surface froide, losange en contour
+ */
+export const TIER_THEME: Record<HouseTier, { panel: string; rule: string }> = {
+  or: { panel: "var(--paper)", rule: "var(--gold)" },
+  bronze: { panel: "var(--ecru)", rule: "var(--bronze)" },
+  argent: { panel: "var(--surface-elevated)", rule: "var(--silver)" },
+};
+
 const norm = (s: string) => s.trim().toLowerCase().replace(/[.'’®]/g, "").replace(/\s+/g, " ");
 
 const OR = new Set(

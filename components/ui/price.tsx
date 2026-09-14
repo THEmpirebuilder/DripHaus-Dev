@@ -18,7 +18,7 @@ export function Price({ amount, currency = "CHF", display = false, className }: 
     <span
       className={cn(
         "tabular-nums",
-        display ? "font-serif" : "font-semibold",
+        display ? "t-price" : "font-semibold",
         className
       )}
     >

@@ -36,7 +36,7 @@ export default async function FeedPage({
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <div className="mb-6">
         <div className="u-label mb-1.5 text-[10px] text-accent">La communauté</div>
-        <h1 className="font-serif text-4xl leading-none">Feed</h1>
+        <h1 className="t-h1">Feed</h1>
       </div>
 
       <StoryRail boutiques={suggested} />

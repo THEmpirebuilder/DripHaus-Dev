@@ -23,7 +23,7 @@ export function BoutiqueHeader({
       <Avatar src={boutique.logo_url} name={boutique.name} size={80} className="rounded-none border-accent/40" />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="font-serif truncate text-3xl leading-none">{boutique.name}</h1>
+          <h1 className="t-h2 truncate">{boutique.name}</h1>
           {boutique.kyc_verified && (
             <Badge tone="verified">
               <span className="mr-1 inline-block h-2 w-2 rotate-45 border border-silver" aria-hidden />

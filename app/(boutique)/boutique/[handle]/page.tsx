@@ -88,12 +88,12 @@ export default async function BoutiquePage({ params }: Props) {
       {rating.count > 0 && <Rating value={rating.average} count={rating.count} className="mt-4" />}
 
       <section className="mt-10">
-        <h2 className="mb-4 text-lg font-semibold">Articles</h2>
+        <h2 className="t-h4 mb-4">Articles</h2>
         <ArticleGrid articles={articles} emptyLabel="Aucun article en vente pour le moment." />
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-4 text-lg font-semibold">Avis</h2>
+        <h2 className="t-h4 mb-4">Avis</h2>
         <ReviewList reviews={reviews} />
       </section>
     </main>
