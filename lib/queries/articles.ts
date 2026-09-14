@@ -109,7 +109,16 @@ export async function listArticles(filters: ArticleFilters = {}): Promise<Articl
   let query = supabase.from("articles").select("*").eq("status", "active").eq("is_auction", false);
 
   if (filters.q) query = query.ilike("title", `%${filters.q}%`);
-  if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
+  if (filters.categoryId) {
+    // Une pièce est rangée dans une micro-catégorie (« Vestes & Manteaux »). Filtrer sur
+    // une famille (« Vêtements ») doit inclure ses sous-catégories.
+    const { data: children } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("parent_id", filters.categoryId);
+    const ids = [filters.categoryId, ...(children ?? []).map((c) => c.id)];
+    query = query.in("category_id", ids);
+  }
   if (filters.condition) query = query.eq("condition", filters.condition);
 
   switch (filters.sort) {
