@@ -63,7 +63,11 @@ la logique** (tokens + primitives + composants de présentation, cf. §4).
   authentification uniquement. Noir proscrit → encre `#14130F`.
 - **Typo** : `next/font` (Italiana titres/wordmark, Italianno monogramme, Syne UI). Échelle exacte en
   classes `.t-h1/.t-h2/.t-h3/.t-h4/.t-price` (globals) — valeurs charte p.04.
-- **Marque** : `components/brand/monogram.tsx` (logo/monogramme = transcription fidèle du SVG fourni),
+- **Marque** : `components/brand/monogram.tsx` — `DiamondArt` (losange or dégradé + piqûre + **voile de
+  mini-DH « damier »** reconstruit, clippé au losange, masqué < 40 px + **« STORE »**, prop `store` par
+  défaut `true` ; DH lié Italianno). Exports : `Monogram` (carré), `LogoStacked` (vertical : monogramme +
+  wordmark DRIPHAUS dessous, **utilisé dans le header**, ruban `h-24`), `Logo` (horizontal). Home hero =
+  `Monogram size 132`. Wordmark header en encre (foreground) — arbitrage or/encre resté ouvert.
   `lib/utils/house-tier.ts` (niveaux de maison or/bronze/argent : `houseTier`, `TIER_LABEL`, `TIER_THEME`) +
   `components/brand/house-diamond.tsx`. Assets : `app/icon.svg`, `apple-icon.png`, `opengraph-image.png`,
   `public/brand/`.
