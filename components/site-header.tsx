@@ -3,7 +3,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { getUnreadCount } from "@/lib/queries/notifications";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/brand/monogram";
+import { LogoStacked } from "@/components/brand/monogram";
 
 const NAV = [
   { href: "/marketplace", label: "Marketplace" },
@@ -22,10 +22,10 @@ export async function SiteHeader() {
 
   return (
     <header className="border-b border-border bg-surface">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-6">
         <div className="flex items-center gap-9">
-          <Link href="/" aria-label="DripHaus — accueil">
-            <Logo height={34} />
+          <Link href="/" aria-label="DripHaus — accueil" className="shrink-0">
+            <LogoStacked mark={54} />
           </Link>
           <nav className="hidden items-center gap-7 sm:flex">
             {NAV.map((item) => (

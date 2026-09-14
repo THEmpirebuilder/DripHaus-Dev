@@ -43,6 +43,21 @@ export function Monogram({ size = 40, className, title = "DripHaus" }: { size?: 
   );
 }
 
+/** Logo vertical : monogramme (grand) au-dessus, wordmark DRIPHAUS dessous. Plus visible. */
+export function LogoStacked({ mark = 52, className }: { mark?: number; className?: string }) {
+  return (
+    <span className={cn("inline-flex flex-col items-center leading-none", className)}>
+      <Monogram size={mark} />
+      <span
+        className="font-serif mt-1.5 leading-none text-foreground"
+        style={{ fontSize: Math.max(15, Math.round(mark * 0.32)), letterSpacing: "0.34em", paddingLeft: "0.34em" }}
+      >
+        DRIPHAUS
+      </span>
+    </span>
+  );
+}
+
 /** Logo horizontal officiel : monogramme + wordmark DRIPHAUS. */
 export function Logo({ height = 34, className }: { height?: number; className?: string }) {
   const width = Math.round((height * 470) / 150);
