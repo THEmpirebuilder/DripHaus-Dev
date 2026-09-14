@@ -28,12 +28,15 @@ const PERSONAS: { role: Role; label: string }[] = [
 export function StudioWorkstation({
   persona,
   matches,
+  sources,
 }: {
   persona: Role;
   matches: MatchPiece[];
+  sources: string[];
 }) {
   const [view, setView] = useState<PersonaView>(persona === "particulier" ? "particulier" : "pro");
-  const [activeId, setActiveId] = useState<FamilyId>("D");
+  // On démarre sur l'ingestion (A) : le vrai point d'entrée du Studio.
+  const [activeId, setActiveId] = useState<FamilyId>("A");
   const guided = view === "particulier";
 
   return (
@@ -97,7 +100,7 @@ export function StudioWorkstation({
         </div>
 
         <div className="bg-ecru lg:h-full lg:overflow-y-auto">
-          <StudioCanvas activeId={activeId} matches={matches} />
+          <StudioCanvas activeId={activeId} matches={matches} sources={sources} />
         </div>
 
         <div className="border-t border-border bg-surface lg:h-full lg:overflow-hidden lg:border-l lg:border-t-0">

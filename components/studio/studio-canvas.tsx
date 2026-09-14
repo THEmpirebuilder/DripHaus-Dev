@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils/cn";
 import { Price } from "@/components/ui/price";
 import { HouseDiamond } from "@/components/brand/house-diamond";
 import { SkillTag } from "@/components/studio/skill-tag";
+import { StudioImport } from "@/components/studio/studio-import";
 import { FAMILY_BY_ID, TYPE_LABEL, PIPELINE_ORDER, type FamilyId } from "@/lib/studio/skills";
 import { TIER_LABEL } from "@/lib/utils/house-tier";
 import type { MatchPiece } from "@/lib/queries/studio";
@@ -53,10 +54,15 @@ function Silhouette({ stroke = "var(--silver-deep)" }: { stroke?: string }) {
 export function StudioCanvas({
   activeId,
   matches,
+  sources,
 }: {
   activeId: FamilyId;
   matches: MatchPiece[];
+  sources: string[];
 }) {
+  // Famille A = ingestion : le point d'entrée réel (import / photo / réutilisation).
+  if (activeId === "A") return <StudioImport sources={sources} />;
+
   const fam = FAMILY_BY_ID[activeId];
   const stepNo = PIPELINE_ORDER.indexOf(activeId) + 1;
   const isMatching = activeId === "L";

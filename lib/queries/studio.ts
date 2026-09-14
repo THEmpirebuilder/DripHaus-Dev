@@ -1,6 +1,8 @@
+import { createClient } from "@/lib/supabase/server";
 import { listArticles } from "@/lib/queries/articles";
-import { firstImage } from "@/lib/utils/media";
+import { firstImage, toImageUrls } from "@/lib/utils/media";
 import { houseTier, type HouseTier } from "@/lib/utils/house-tier";
+import type { Json } from "@/types/database";
 
 /**
  * Lectures typées pour le Studio IA (couche 2, cf. CLAUDE.md §4). Les pages
@@ -41,4 +43,41 @@ export async function getMatchingSuggestions(limit = 3): Promise<MatchPiece[]> {
     size: a.size,
     tier: houseTier(a.brand),
   }));
+}
+
+/**
+ * Images déjà présentes sur DripHaus que l'utilisateur peut réutiliser comme
+ * INPUT du Studio (famille A) : ses propres pièces + celles des boutiques dont
+ * il est membre. Évite de re-téléverser une photo déjà en ligne.
+ */
+export async function getStudioSources(userId: string, limit = 12): Promise<string[]> {
+  const supabase = await createClient();
+
+  const { data: own } = await supabase
+    .from("articles")
+    .select("images")
+    .eq("seller_user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  const { data: memberships } = await supabase
+    .from("boutique_members")
+    .select("boutique_id")
+    .eq("user_id", userId);
+
+  const boutiqueIds = (memberships ?? []).map((m) => m.boutique_id);
+  let boutiqueArticles: { images: Json }[] = [];
+  if (boutiqueIds.length > 0) {
+    const { data } = await supabase
+      .from("articles")
+      .select("images")
+      .in("seller_boutique_id", boutiqueIds)
+      .order("created_at", { ascending: false })
+      .limit(limit * 2);
+    boutiqueArticles = data ?? [];
+  }
+
+  const urls: string[] = [];
+  for (const a of [...(own ?? []), ...boutiqueArticles]) urls.push(...toImageUrls(a.images));
+  return Array.from(new Set(urls)).slice(0, limit);
 }
