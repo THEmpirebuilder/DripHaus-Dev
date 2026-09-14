@@ -50,8 +50,42 @@ export function FilterBar({ categories }: { categories: Category[] }) {
     [params, pathname, router]
   );
 
+  // Sélecteur catégorie en CASCADE : Famille -> Macro -> Micro. Le param d'URL
+  // `category` porte le niveau le plus profond choisi ; on remonte ses parents
+  // pour pré-remplir les selects. Chaque niveau ne s'affiche que si le parent
+  // est choisi. Vider un niveau retombe sur son parent (et non « tout »).
+  const childrenOf = (parentId: string | null) =>
+    categories.filter((c) => (c.parent_id ?? null) === parentId);
+
+  const current = params.get("category") ?? "";
+  const node = categories.find((c) => c.id === current) ?? null;
+  const parent = node?.parent_id ? categories.find((c) => c.id === node.parent_id) ?? null : null;
+  const grandParent = parent?.parent_id
+    ? categories.find((c) => c.id === parent.parent_id) ?? null
+    : null;
+
+  // Résolution des 3 niveaux à partir du nœud courant (famille/macro/micro).
+  let familyId = "";
+  let macroId = "";
+  let microId = "";
+  if (node) {
+    if (!node.parent_id) familyId = node.id;
+    else if (parent && !parent.parent_id) {
+      macroId = node.id;
+      familyId = parent.id;
+    } else if (parent && grandParent) {
+      microId = node.id;
+      macroId = parent.id;
+      familyId = grandParent.id;
+    }
+  }
+
+  const families = childrenOf(null);
+  const macros = familyId ? childrenOf(familyId) : [];
+  const micros = macroId ? childrenOf(macroId) : [];
+
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <Input
         placeholder="Rechercher…"
         defaultValue={params.get("q") ?? ""}
@@ -61,17 +95,45 @@ export function FilterBar({ categories }: { categories: Category[] }) {
         aria-label="Rechercher"
       />
       <Select
-        value={params.get("category") ?? ""}
+        value={familyId}
         onChange={(e) => update("category", e.target.value)}
-        aria-label="Catégorie"
+        aria-label="Famille"
       >
-        <option value="">Toutes catégories</option>
-        {categories.map((c) => (
+        <option value="">Toutes familles</option>
+        {families.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
           </option>
         ))}
       </Select>
+      {familyId && (
+        <Select
+          value={macroId}
+          onChange={(e) => update("category", e.target.value || familyId)}
+          aria-label="Catégorie"
+        >
+          <option value="">Toutes catégories</option>
+          {macros.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </Select>
+      )}
+      {macroId && micros.length > 0 && (
+        <Select
+          value={microId}
+          onChange={(e) => update("category", e.target.value || macroId)}
+          aria-label="Type"
+        >
+          <option value="">Tous les types</option>
+          {micros.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </Select>
+      )}
       <Select
         value={params.get("genre") ?? ""}
         onChange={(e) => update("genre", e.target.value)}

@@ -183,23 +183,17 @@ export async function getFamilyRails(
 }
 
 /**
- * « Sélection pour toi » — v1 sans signal de goût : un échantillon récent et
- * VARIÉ (une pièce par catégorie d'abord, puis on complète) pour ne pas cloner
- * la grille principale. La personnalisation réelle (likes / follows / historique
- * d'achat, puis embeddings famille L) viendra remplacer l'ordre ici.
+ * « Sélection pour toi » — v1 sans signal de goût : quelques pièces AU HASARD
+ * dans le catalogue actif. On tire un large échantillon puis on le mélange
+ * (Fisher-Yates). La personnalisation réelle (likes / follows / historique
+ * d'achat, puis embeddings famille L) viendra remplacer ce tirage ici.
  */
 export async function getSelectionForYou(limit = 12): Promise<Article[]> {
-  const { items } = await listArticles({ pageSize: 48, sort: "recent" });
-  const seen = new Set<string>();
-  const primary: Article[] = [];
-  const rest: Article[] = [];
-  for (const a of items) {
-    const key = a.category_id ?? "none";
-    if (seen.has(key)) rest.push(a);
-    else {
-      seen.add(key);
-      primary.push(a);
-    }
+  const { items } = await listArticles({ pageSize: 100, sort: "recent" });
+  const pool = [...items];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  return [...primary, ...rest].slice(0, limit);
+  return pool.slice(0, limit);
 }

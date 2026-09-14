@@ -83,7 +83,11 @@ export default async function MarketplacePage({
     <main className="mx-auto max-w-5xl px-6 py-12">
       <div className="mb-8">
         <div className="u-label mb-1.5 text-[11px] text-accent">
-          {activeCategory ? "Famille" : "Le catalogue"}
+          {activeCategory
+            ? activeCategory.parent_id === null
+              ? "Famille"
+              : "Catégorie"
+            : "Le catalogue"}
         </div>
         <h1 className="t-h1">{activeCategory ? activeCategory.name : "Marketplace"}</h1>
       </div>
