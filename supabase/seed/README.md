@@ -14,7 +14,7 @@ fois qu'on veut, l'état final est identique (pas de doublon, pas d'erreur). Mé
 
 | # | Fichier / script | Contenu | Dépend de |
 |---|---|---|---|
-| 01 | `01_categories.sql` | Taxonomie (5 familles + 33 sous-catégories) | — |
+| 01 | `01_categories.sql` | Taxonomie macro/micro — arbre 3 niveaux (5 familles · 49 macro-catégories · 196 micro-catégories) | — |
 | 02 | `02_users_boutiques.sql` | 13 comptes bots (auth + profils) + 3 boutiques | 01 |
 | — | `scripts/pexels-fetch.mjs` | Télécharge les packshots Pexels → `demo-assets/packshots/` + `manifest.json` | clé Pexels |
 | 03 | `03_articles.sql` *(généré)* | 53 articles ; `images` = URLs **Pexels** (temporaire) | 01, 02, manifeste |

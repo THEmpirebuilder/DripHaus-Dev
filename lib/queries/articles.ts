@@ -86,6 +86,7 @@ export type ArticleSort = "recent" | "price_asc" | "price_desc";
 export type ArticleFilters = {
   q?: string;
   categoryId?: string;
+  genre?: Enums<"article_gender">;
   condition?: Enums<"article_condition">;
   sort?: ArticleSort;
   page?: number;
@@ -110,14 +111,24 @@ export async function listArticles(filters: ArticleFilters = {}): Promise<Articl
 
   if (filters.q) query = query.ilike("title", `%${filters.q}%`);
   if (filters.categoryId) {
-    // Une pièce est rangée dans une micro-catégorie (« Vestes & Manteaux »). Filtrer sur
-    // une famille (« Vêtements ») doit inclure ses sous-catégories.
-    const { data: children } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("parent_id", filters.categoryId);
-    const ids = [filters.categoryId, ...(children ?? []).map((c) => c.id)];
-    query = query.in("category_id", ids);
+    // L'arbre a 3 niveaux (Famille -> Macro -> Micro) et une pièce peut être
+    // rangée à n'importe quel niveau. Filtrer sur un nœud doit donc inclure
+    // TOUS ses descendants (récursif) — cf. fonction SQL `category_descendants`.
+    const { data: descendants } = await supabase.rpc("category_descendants", {
+      root: filters.categoryId,
+    });
+    const ids = (descendants ?? []) as string[];
+    query = query.in("category_id", ids.length ? ids : [filters.categoryId]);
+  }
+  if (filters.genre) {
+    // Une pièce unisexe s'affiche AUSSI sous les filtres « femme » et « homme »
+    // (elle se porte indifféremment). Les filtres enfant (fille/garcon/bebe)
+    // restent en correspondance exacte.
+    if (filters.genre === "femme" || filters.genre === "homme") {
+      query = query.in("genre", [filters.genre, "unisexe"]);
+    } else {
+      query = query.eq("genre", filters.genre);
+    }
   }
   if (filters.condition) query = query.eq("condition", filters.condition);
 

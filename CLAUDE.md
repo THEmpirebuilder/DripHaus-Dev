@@ -39,7 +39,7 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
 | **Couche 9 — Studio IA** | ✅ caption / SEO / description via AI Gateway (`ai`) |
 | **Refonte UI — charte graphique (WS2)** | ✅ tokens clair+sombre, fonts (Italiana/Italianno/Syne), logo officiel, échelle typo exacte, niveaux de maison, feed social, home/marketplace/fiche/vitrine, assets (favicon/OG) |
 
-### Migrations Supabase — 001→008 **toutes appliquées** (projet `dhinegywctxmhepgempp`)
+### Migrations Supabase — 001→008 + **010** appliquées (projet `dhinegywctxmhepgempp`) — 009 réservée (non appliquée)
 - `005_storage_media.sql` : bucket `media` + policies Storage.
 - `006_notifications_triggers.sql` : triggers `new_follower`/`new_like`/`new_comment`/`new_bid`.
 - `007_close_auctions_cron.sql` : clôture enchères échues + `winner_user_id` + notifs, via `pg_cron`.
@@ -49,10 +49,30 @@ Stack : **Next.js 15 (App Router) · TypeScript strict · Tailwind v4 · Supabas
   création via `startCheckout` en service_role) ; restreint le bucket `media` (MIME images + 8 Mo).
   ⚠️ Corollaire code : ne jamais faire `select("*")` sur `boutiques` en client (colonnes masquées → erreur) —
   passer par `BOUTIQUE_PUBLIC_COLUMNS` / le type `BoutiquePublic` (`lib/queries/boutiques.ts`).
+- **`010_taxonomy_and_gender.sql`** (2026-09-14, appliquée) : taxonomie macro/micro + facette genre.
+  Enum `article_gender` (`femme·homme·fille·garcon·unisexe·bebe`) + colonne `articles.genre` (nullable, indexée) ;
+  fonction récursive `category_descendants(uuid)` (arbre `categories` désormais **3 niveaux** Famille→Macro→Micro —
+  filtrer une famille doit remonter les petits-enfants). `listArticles` utilise le RPC + accepte un filtre `genre`.
+  Seed `01_categories.sql` réécrit (**250 nœuds** : 5 familles · 49 macros · 196 micros, idempotent, slugs
+  réutilisables conservés) ; `03_articles.sql` remappe les 54 articles démo (micro précise + genre).
 
 > **À faire (WB1, non fait)** : activer la protection mots de passe compromis (toggle dashboard Supabase
-> Auth — seul WARN advisor restant) ; rate-limiting/anti-bot ; CSP ; migration `009` RLS perf
-> `(select auth.uid())` + nettoyage index.
+> Auth — seul WARN advisor restant) ; rate-limiting/anti-bot ; CSP ; RLS perf `(select auth.uid())`
+> + nettoyage index (à replacer dans une migration ultérieure).
+
+### Studio IA — socle stockage & données (migration `009`, **NON APPLIQUÉE**)
+Conçu 2026-09-14. Le Studio produisait des assets (mannequins, jobs, brouillons/finaux, presets, contrat
+JSON, crédits, embeddings) **sans aucun foyer** en base. `supabase/migrations/009_studio_schema.sql`
+(versionnée, à jouer **après validation** ; rollback commenté) pose : `studio_credit_ledger` (grand-livre
+pondéré append-only), `studio_jobs` (queue app↔Engine), `studio_assets` (+ **contrat d'assets JSON**,
+lineage), `mannequins` (identité verrouillée + versioning), `studio_presets` (décors/DA/thèmes), et
+`article_embeddings` (**pgvector 768d** Marqo-FashionSigLIP → matching famille L, le moat). RLS calquée sur
+`transactions` : l'app **enfile** un job (`status=queued`) et **lit** ; l'**Engine** (service_role) exécute,
+écrit assets, débite crédits. **Buckets** privés `studio-in`/`studio-draft` (purge 7j)/`studio-out` +
+promotion vers `media` = SQL commenté en fin de 009 (à jouer comme 005). Doc complet :
+`../cerveau/STUDIO_IA_STOCKAGE_DONNEES.md`. **Registre de skills = code** (`lib/studio/skills.ts`, à créer),
+pas base. Après application : `npm run types:gen`. Maquette UI hybride (Artifact) validée en design.
+⚠️ `009` active l'extension `vector` — vérifier qu'elle est autorisée sur le projet.
 
 ### Refonte UI (WS2) — charte graphique, appliquée 2026-09-14
 Charte fournie par l'associé dans `../Dossier Marque DripHaus/` (hors repo). Appliquée **sans toucher
@@ -76,9 +96,8 @@ la logique** (tokens + primitives + composants de présentation, cf. §4).
 - **Motion** : `app/template.tsx` (fondu de navigation, respecte prefers-reduced-motion).
 
 > **Suites (prochaines sessions)** :
-> 1. **Catégories macro/micro** (session SQL Supabase) : définir proprement la taxonomie. NB code déjà en
->    place — `listArticles` étend un parent à ses sous-catégories (`lib/queries/articles.ts`), donc filtrer
->    une famille marche ; reste à structurer/compléter les rattachements en base.
+> 1. ~~**Catégories macro/micro**~~ ✅ **FAIT (2026-09-14, migration 010)** — arbre 3 niveaux (250 nœuds),
+>    facette genre, filtre récursif. Voir la section migration `010` ci-dessus.
 > 2. **Nettoyer la base LIVE** (emojis des posts + logos DiceBear) : UPDATE idempotent déjà dans
 >    `supabase/seed/02` & `04`, mais l'exécution directe a été bloquée par le garde-fou — rejouer via
 >    l'éditeur SQL Supabase ou un re-seed.
@@ -89,8 +108,9 @@ la logique** (tokens + primitives + composants de présentation, cf. §4).
 - **Webhook Stripe** (`app/api/webhooks/stripe/route.ts`) : `held`/`payout` + marque l'article `sold` à l'encaissement, et émet les notifs `sale`/`payout` (service_role). Reste à déclencher `releaseSellerPayout` après confirmation de livraison (résout alors le compte vendeur).
 
 ### Données de démo (WS0 — seedées 2026-09-11)
-- Décor de démonstration seedé : **33 catégories, 13 comptes bots, 3 boutiques (Suisse romande),
-  53 articles (images dans le bucket Storage `media`), activité sociale + 1 enchère**. Marqueur des
+- Décor de démonstration seedé : **taxonomie 250 nœuds (5 familles · 49 macros · 196 micros), 13 comptes
+  bots, 3 boutiques (Suisse romande), 54 articles (images dans le bucket Storage `media`, tous rattachés à
+  une micro-catégorie + genre), activité sociale + 1 enchère**. Marqueur des
   comptes bots : email `@demo.driphaus.ch`. SQL idempotent versionné dans **`supabase/seed/`** (voir
   son `README.md` pour l'ordre + le pipeline images Pexels→Storage via `scripts/`). Rejouable sans
   doublon. Insertion **directe** (service_role) ; le pilotage complet de l'UI par les bots est prévu
@@ -114,7 +134,8 @@ migration numérotée** (jamais modifier une migration déjà appliquée), puis
 
 16 tables : `users`, `profiles`, `boutiques`, `boutique_members`, `categories`,
 `articles`, `auctions`, `auction_bids`, `posts`, `follows`, `likes`, `comments`,
-`transactions`, `disputes`, `reviews`, `notifications`. 17 enums Postgres.
+`transactions`, `disputes`, `reviews`, `notifications`. 18 enums Postgres
+(dont `article_gender`). `articles.genre` = facette transverse aux 5 familles.
 
 Règles structurantes à respecter dans tout le code :
 
